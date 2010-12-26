@@ -21,16 +21,19 @@ int main() {
 	xn::Context context;
 
 	nRetVal = context.Init();
-	checkError("Fehler beim Initialisieren des Context", nRetVal);
+	checkError("Fehler beim Initialisieren des Context", nRetVal)?0:exit(-1);
 
 	xn::DepthGenerator depth;
 	nRetVal = depth.Create(context);
-	checkError("Fehler beim Erstellen des Tiefengenerators", nRetVal);
+	checkError("Fehler beim Erstellen des Tiefengenerators", nRetVal)?0:exit(-1);
 
 	nRetVal = context.StartGeneratingAll();
 	while(1) {
 		nRetVal = context.WaitOneUpdateAll(depth);
-		errorCheck("Fehler beim Aktualisieren der Daten", nRetVal);
+		if(!checkError("Fehler beim Aktualisieren der Daten", nRetVal))
+			continue;
+
+
 	}
 
 	return 0;
