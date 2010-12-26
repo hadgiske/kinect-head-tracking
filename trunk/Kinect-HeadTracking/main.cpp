@@ -33,12 +33,12 @@ void glut_idle() {
 void glut_display() {
 
 	// Warten auf neue Daten vom Tiefengenerator
-	nRetVal = context.WaitOneUpdateAll(depth);
-	if(!checkError("Fehler beim Aktualisieren der Daten", nRetVal))
-		continue;
+//	nRetVal = context.WaitOneUpdateAll(depth);
+//	if(!checkError("Fehler beim Aktualisieren der Daten", nRetVal))
+//		continue;
 
 	// Aktuelle Depthmap auslesen
-	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
+//	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
 
 
 	// OpenGL
@@ -62,12 +62,22 @@ void glut_display() {
 int main(int argc, char **argv) {
 	XnStatus nRetVal = XN_STATUS_OK;
 
-	nRetVal = context.InitFromXmlFile(CONFIG_XML_FILE);
+	nRetVal = context.Init();
 	checkError("Fehler beim Initialisieren des Context", nRetVal)?0:exit(-1);
 
 	xn::DepthGenerator depth;
-	nRetVal = context.FindExistingNode(XN_NODE_TYPE_DEPTH, depth);
+	nRetVal = depth.Create(context);
 	checkError("Fehler beim Erstellen des Tiefengenerators", nRetVal)?0:exit(-1);
+	
+	XnMapOutputMode outputMode;
+	outputMode.nXRes = 640;
+	outputMode.nYRes = 480;
+	outputMode.nFPS = 30;
+	nRetVal = depth.SetMapOutputMode(outputMode);
+	checkError("Fehler beim Konfigurieren des Tiefengenerators", nRetVal)?0:exit(-1);
+
+	nRetVal = context.StartGeneratingAll();
+	checkError("Fehler beim Starten des Tiefengenerators", nRetVal)?0:exit(-1);
 
 	/* Glut initialisieren */
 	glutInit(&argc, argv);
