@@ -33,30 +33,41 @@ void glut_idle() {
 void glut_display() {
 	xn::DepthMetaData pDepthMapMD;
 
-	// Warten auf neue Daten vom Tiefengenerator
-	nRetVal = context.WaitOneUpdateAll(depth);
-	checkError("Fehler beim Aktualisieren der Daten", nRetVal);
-
-	depth.GetMetaData(pDepthMapMD);
-	// Aktuelle Depthmap auslesen
-	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
-
-
-
-	// OpenGL
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPerspective(45, 640/480, 1, 1000);
+//	gluPerspective(45, 640/480, 1, 1000);
+	glOrtho(0, 640, 480, 0, -128, 128);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
 	glTranslatef(1.5, 0, -5);
- 	glColor3f(0.5, 0, 0);
-	glutSolidCube(2);
+
+
+	// Warten auf neue Daten vom Tiefengenerator
+	nRetVal = context.WaitOneUpdateAll(depth);
+	checkError("Fehler beim Aktualisieren der Daten", nRetVal);
+
+	// Aktuelle Metadatn auslesen
+	depth.GetMetaData(pDepthMapMD);
+
+	// Aktuelle Depthmap auslesen
+	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
+
+	XnDepthPixel maxdepth = depth.GetDeviceMaxDepth();
+	glBegin(GL_POINTS);
+	for(unsigned int y=0; y<pDepthMapMD.YRes()-1; y++) {
+		for(unsigned int x=0; x<pDepthMapMD.XRes(); x++) {
+			glColor3f(static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth),
+				static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth),
+				static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth));
+			glVertex3f(x,y,0);		
+		}
+	}
+	glEnd();
 
 	glutSwapBuffers();
 }
