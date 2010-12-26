@@ -14,13 +14,13 @@ using namespace std;
 /* Globals */
 static int win;
 xn::Context context;
-
+xn::DepthGenerator depth;
+XnStatus nRetVal;
 
 
 bool checkError(string message, XnStatus nRetVal) {
 	if(nRetVal != XN_STATUS_OK) {
 		cout << message << ": " << xnGetStatusString(nRetVal) << endl;
-//		printf("%s: %s\n", message, xnGetStatusString(nRetVal));
 		return false;
 	}
 	return true;
@@ -31,14 +31,16 @@ void glut_idle() {
 }
 
 void glut_display() {
+	xn::DepthMetaData pDepthMapMD;
 
 	// Warten auf neue Daten vom Tiefengenerator
-//	nRetVal = context.WaitOneUpdateAll(depth);
-//	if(!checkError("Fehler beim Aktualisieren der Daten", nRetVal))
-//		continue;
+	nRetVal = context.WaitOneUpdateAll(depth);
+	checkError("Fehler beim Aktualisieren der Daten", nRetVal);
 
+	depth.GetMetaData(pDepthMapMD);
 	// Aktuelle Depthmap auslesen
-//	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
+	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
+
 
 
 	// OpenGL
@@ -60,12 +62,12 @@ void glut_display() {
 }
 
 int main(int argc, char **argv) {
-	XnStatus nRetVal = XN_STATUS_OK;
+	nRetVal = XN_STATUS_OK;
 
 	nRetVal = context.Init();
 	checkError("Fehler beim Initialisieren des Context", nRetVal)?0:exit(-1);
 
-	xn::DepthGenerator depth;
+
 	nRetVal = depth.Create(context);
 	checkError("Fehler beim Erstellen des Tiefengenerators", nRetVal)?0:exit(-1);
 	
@@ -83,6 +85,7 @@ int main(int argc, char **argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
 	glutInitWindowSize(640, 480);
+	glutInitWindowPosition(300,150);
 	win = glutCreateWindow("Daniels und Marcels 3D Welt");
 	glClearColor(0.3, 0.4, 0.7, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
 	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
