@@ -51,20 +51,17 @@ void glut_display() {
 	nRetVal = context.WaitOneUpdateAll(depth);
 	checkError("Fehler beim Aktualisieren der Daten", nRetVal);
 
-	// Aktuelle Metadatn auslesen
+	// Aktuelle Metadaten auslesen
 	depth.GetMetaData(pDepthMapMD);
-
 	// Aktuelle Depthmap auslesen
 	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
 
 	XnDepthPixel maxdepth = depth.GetDeviceMaxDepth();
 	glBegin(GL_POINTS);
-	for(unsigned int y=0; y<pDepthMapMD.YRes()-1; y++) {
+	for(unsigned int y=0; y<pDepthMapMD.YRes(); y++) {
 		for(unsigned int x=0; x<pDepthMapMD.XRes(); x++) {
-			glColor3f(static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth),
-				static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth),
-				static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth));
-			glVertex3f(x,y,0);		
+			glColor3f(static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth), 0, 0);
+			glVertex3f(pDepthMapMD.XRes()-x-1,y,0);		
 		}
 	}
 	glEnd();
@@ -75,13 +72,17 @@ void glut_display() {
 int main(int argc, char **argv) {
 	nRetVal = XN_STATUS_OK;
 
+	/* Context initialisieren (Kameradaten) */
 	nRetVal = context.Init();
 	checkError("Fehler beim Initialisieren des Context", nRetVal)?0:exit(-1);
 
 
+
+	/* Tiefengenerator erstellen */
 	nRetVal = depth.Create(context);
 	checkError("Fehler beim Erstellen des Tiefengenerators", nRetVal)?0:exit(-1);
-	
+
+	/* Tiefengenerator einstellen */
 	XnMapOutputMode outputMode;
 	outputMode.nXRes = 640;
 	outputMode.nYRes = 480;
@@ -91,6 +92,10 @@ int main(int argc, char **argv) {
 
 	nRetVal = context.StartGeneratingAll();
 	checkError("Fehler beim Starten des Tiefengenerators", nRetVal)?0:exit(-1);
+
+
+
+
 
 	/* Glut initialisieren */
 	glutInit(&argc, argv);
