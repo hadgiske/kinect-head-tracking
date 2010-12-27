@@ -6,6 +6,9 @@
 // OpenNI
 #include <XnCppWrapper.h>
 
+#include "KVector.h"
+#include "KTriangle.h"
+
 using namespace std;
 
 /* Defines */
@@ -32,24 +35,24 @@ void glut_idle() {
 }
 
 void glut_display() {
-	xn::DepthMetaData pDepthMapMD;
-	xn::ImageMetaData pImageMapMD;
+	/*xn::DepthMetaData pDepthMapMD;
+	xn::ImageMetaData pImageMapMD;*/
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-//	gluPerspective(45, 640/480, 1, 1000);
-	glOrtho(0, 640, 480, 0, -128, 128);
+	gluPerspective(45, 640/480, 0, 200);
+//	glOrtho(0, 640, 480, 0, -128, 128);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
-	glTranslatef(1.5, 0, -5);
+	glTranslatef(0, 0, -100);
 
 	// Warten auf neue Daten vom Tiefengenerator
-	nRetVal = context.WaitAndUpdateAll();
+	/*nRetVal = context.WaitAndUpdateAll();
 	checkError("Fehler beim Aktualisieren der Daten", nRetVal);
 
 	// Aktuelle Depth Metadaten auslesen
@@ -78,13 +81,37 @@ void glut_display() {
 	}
 	glEnd();
 
+	
 
+*/
+
+	glBegin(GL_TRIANGLES);
+		//-------------------------------------------------------------------------
+	//TOOOOOO DELETE
+	//-------------------------------------------------------------------------
+	KVector Vector1(1,2,3);
+	KVector Vector2(4,5,6);
+
+	KVector Vector3 = Vector1 + Vector2;
+	double scale = Vector1 * Vector2;
+	double amount = Vector1.getAbs();
+	KVector Vector5 = scale * Vector1;
+	KVector Vector6 = Vector1 * scale;
+
+	KTriangle Angle1 (KVector(-5,0,0),KVector(5,0,0), KVector(0,5,0));
+	Angle1.renderTriangle();
+
+
+	//-------------------------------------------------------------------------
+	//TOOOOOO DELETE
+	//-------------------------------------------------------------------------
+	glEnd();
 
 	glutSwapBuffers();
 }
 
 int main(int argc, char **argv) {
-	nRetVal = XN_STATUS_OK;
+	/*nRetVal = XN_STATUS_OK;*/
 
 	/* Context initialisieren (Kameradaten) */
 	nRetVal = context.Init();
@@ -92,12 +119,13 @@ int main(int argc, char **argv) {
 
 
 
+
 	/* Tiefengenerator erstellen */
-	nRetVal = depth.Create(context);
+	/*nRetVal = depth.Create(context);
 	checkError("Fehler beim Erstellen des Tiefengenerators", nRetVal)?0:exit(-1);
 
 	/* Tiefengenerator einstellen */
-	XnMapOutputMode outputModeDepth;
+	/*XnMapOutputMode outputModeDepth;
 	outputModeDepth.nXRes = 640;
 	outputModeDepth.nYRes = 480;
 	outputModeDepth.nFPS = 30;
@@ -106,11 +134,11 @@ int main(int argc, char **argv) {
 
 
 	/* Imagegenerator erstellen */
-	nRetVal = image.Create(context);
+	/*nRetVal = image.Create(context);
 	checkError("Fehler beim Erstellen des Bildgenerators", nRetVal)?0:exit(-1);
 
 	/* Imagegenerator einstellen */
-	XnMapOutputMode outputModeImage;
+	/*XnMapOutputMode outputModeImage;
 	outputModeImage.nXRes = 640;
 	outputModeImage.nYRes = 480;
 	outputModeImage.nFPS = 30;
@@ -119,7 +147,7 @@ int main(int argc, char **argv) {
 
 
 	/* Starten der Generatoren - volle Kraft vorraus! */
-	nRetVal = context.StartGeneratingAll();
+	/*nRetVal = context.StartGeneratingAll();
 	checkError("Fehler beim Starten der Generatoren", nRetVal)?0:exit(-1);
 
 	/* Glut initialisieren */
