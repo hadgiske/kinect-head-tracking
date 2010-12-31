@@ -106,11 +106,12 @@ void glut_display() {
 	XnDepthPixel maxdepth = depth.GetDeviceMaxDepth();
 	const unsigned int xres = pDepthMapMD.XRes();
 	const unsigned int yres = pDepthMapMD.YRes();
-
+//	datei.open("daniel.txt", ios::out);
 
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<xres; x++) {
 			aDepthMap[x+y*xres] = static_cast<GLubyte>(static_cast<float>(pDepthMap[x+y*xres])/static_cast<float>(maxdepth)*255);
+//			datei << x << " "  << y << " " << pDepthMap[x+y*xres] << " " << static_cast<int>(pImageMap[x+y*xres].nRed) << " " << static_cast<int>(pImageMap[x+y*xres].nGreen) << " " << static_cast<int>(pImageMap[x+y*xres].nBlue) << endl;
 		}
 	}
 
@@ -160,6 +161,8 @@ void glut_display() {
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 	glutSwapBuffers();
+//	datei.close();
+//	exit(-1);
 }
 
 int main(int argc, char **argv) {
