@@ -13,7 +13,9 @@
 using namespace std;
 
 /* Defines */
-#define CONFIG_XML_FILE "xml/config.xml"
+#define WINDOW_SIZE_X 800
+#define WINDOW_SIZE_Y 600
+
 
 /* Globals */
 static int win;
@@ -21,7 +23,16 @@ xn::Context context;
 xn::DepthGenerator depth;
 xn::ImageGenerator image;
 XnStatus nRetVal;
+GLuint texture_rgb, texture_depth;
+GLubyte aDepthMap[640*480];
 
+int fx = 0;
+int fy = 0;
+int cx = 0;
+int cy = 0;
+int ox = 0;
+int oy = 0;
+bool lp = false;
 
 
 bool checkError(string message, XnStatus nRetVal) {
@@ -32,9 +43,25 @@ bool checkError(string message, XnStatus nRetVal) {
 	return true;
 }
 
+void glut_mouse_motion(int x, int y) {
+	if(lp) {
+		cx = x-fx+ox;
+		cy = fy-y+oy;
+	}
+}
+
 void glut_mouse(int button, int state, int x, int y) {
 	if(button==GLUT_LEFT_BUTTON) {
-//		rotieren = 1;
+		if(state==GLUT_DOWN) {
+			lp = true;
+			fx = x;
+			fy = y;
+		}
+		else {
+			lp = false;
+			ox = cx;
+			oy = cy;
+		}
 	}
 }
 
@@ -46,20 +73,18 @@ float rot_angle=0;
 void glut_display() {
 	xn::DepthMetaData pDepthMapMD;
 	xn::ImageMetaData pImageMapMD;
-//	ofstream datei;
+	ofstream datei;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPerspective(45, 640/480, 0, 5000);
-//	glOrtho(0, 640, 480, 0, -128, 128);
+	gluPerspective(45, WINDOW_SIZE_X/WINDOW_SIZE_Y, 0, 5000);
+//	glOrtho(0, WINDOW_SIZE_X, WINDOW_SIZE_Y, 0, -128, 128);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	
-
 	
 	rot_angle+=0.7;
 
@@ -79,80 +104,64 @@ void glut_display() {
 
 	glColor3f(1, 1, 1);
 	XnDepthPixel maxdepth = depth.GetDeviceMaxDepth();
-	float farbe;
-	float alphakanal;
-	int x2 = 0;
-	int y2 = 0;
 	const unsigned int xres = pDepthMapMD.XRes();
 	const unsigned int yres = pDepthMapMD.YRes();
 
-//	datei.open("ausgabe_raw.txt", ios::out);
-	glTranslatef(0, 0, -2000);
-	glRotatef(-30, 0, 1, 0);
-	glTranslatef(300, -200, -50);
+
+	for(unsigned int y=0; y<yres-1; y++) {
+		for(unsigned int x=0; x<xres; x++) {
+			aDepthMap[x+y*xres] = static_cast<GLubyte>(static_cast<float>(pDepthMap[x+y*xres])/static_cast<float>(maxdepth)*255);
+		}
+	}
+
+	glEnable(GL_TEXTURE_2D);
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(-800, 0, -2000);
+	glBindTexture(GL_TEXTURE_2D, texture_rgb);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 640, 480, 0, GL_RGB, GL_UNSIGNED_BYTE, pImageMap);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,1); glVertex3f(0,0,0);
+		glTexCoord2f(1,1); glVertex3f(640,0,0);
+		glTexCoord2f(1,0); glVertex3f(640,480,0);
+		glTexCoord2f(0,0); glVertex3f(0,480,0);
+	glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(-800, -600, -2000);
+	glBindTexture(GL_TEXTURE_2D, texture_depth);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, 640, 480, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, aDepthMap);
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,1); glVertex3f(0,0,0);
+		glTexCoord2f(1,1); glVertex3f(640,0,0);
+		glTexCoord2f(1,0); glVertex3f(640,480,0);
+		glTexCoord2f(0,0); glVertex3f(0,480,0);
+	glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(50, -200, -3000);
+	glRotatef(cx,0,1,0);
+	glRotatef(cy,1,0,0);
+	glBindTexture(GL_TEXTURE_2D, texture_rgb);
 	for(unsigned int y=0; y<yres-1; y++) {
 		glBegin(GL_TRIANGLE_STRIP);
 		for(unsigned int x=0; x<xres; x++) {
-//			farbe = static_cast<float>(pDepthMap[x+y*(xres)])/static_cast<float>(maxdepth);
-//			glColor3f(farbe, farbe, farbe);
-//			glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*1020));
-//			datei << pDepthMap[x+y*xres] << endl;
-//			glVertex3f(x, (yres-y), x%100);
-			if(pDepthMap[x+y*xres]<=200 || pDepthMap[x+(y+1)*xres]>=1800)
-				alphakanal = 0;
-			else
-				alphakanal = 1;
-
-//  			glColor4f(static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth),
-//  				static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth),
-//  				static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth), alphakanal);
-
-			glColor4f(static_cast<float>(pImageMap[x+y+y*(pImageMapMD.XRes()-1)].nRed)/static_cast<float>(255),
-				static_cast<float>(pImageMap[x+y+y*(pImageMapMD.XRes()-1)].nGreen)/static_cast<float>(255),
-				static_cast<float>(pImageMap[x+y+y*(pImageMapMD.XRes()-1)].nBlue)/static_cast<float>(255),alphakanal);
-			//glVertex3f(x, (yres-y), -pDepthMap[x+y*xres]);
-			glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*1020));
-
-//			farbe = static_cast<float>(pDepthMap[x+(y+1)*(xres)])/static_cast<float>(maxdepth);
-//			glColor3f(farbe, farbe, farbe);
-//			glVertex3f(x, (yres-y-1), (1020-static_cast<float>(pDepthMap[x+(y+1)*xres])/maxdepth*1020));
-//			glVertex3f(x, (yres-y-1), x%100);
-
-// 			glColor3f(static_cast<float>(pImageMap[x+(y+1)*(pImageMapMD.XRes())].nRed)/static_cast<float>(255),
-// 				static_cast<float>(pImageMap[x+(y+1)*(pImageMapMD.XRes())].nGreen)/static_cast<float>(255),
-// 				static_cast<float>(pImageMap[x+(y+1)*(pImageMapMD.XRes())].nBlue)/static_cast<float>(255));
-
-		
-
-
-			if(pDepthMap[x+(y+1)*xres]<=200 || pDepthMap[x+(y+1)*xres]>=1800 )
-				alphakanal = 0;
-			else
-				alphakanal = 1;
-
-//  			glColor4f(static_cast<float>(pDepthMap[x+(y+1)*(pDepthMapMD.XRes())])/static_cast<float>(maxdepth),
-//  				static_cast<float>(pDepthMap[x+(y+1)*(pDepthMapMD.XRes())])/static_cast<float>(maxdepth),
-//  				static_cast<float>(pDepthMap[x+(y+1)*(pDepthMapMD.XRes())])/static_cast<float>(maxdepth), alphakanal);
-
-			glColor4f(static_cast<float>(pImageMap[x+(y+1)*(pImageMapMD.XRes())].nRed)/static_cast<float>(255),
-				static_cast<float>(pImageMap[x+(y+1)*(pImageMapMD.XRes())].nGreen)/static_cast<float>(255),
-				static_cast<float>(pImageMap[x+(y+1)*(pImageMapMD.XRes())].nBlue)/static_cast<float>(255),alphakanal);
-			//glVertex3f(x, (yres-y-1), -pDepthMap[x+(y+1)*xres]);
-			glVertex3f(x, (yres-y-1), (1020-static_cast<float>(pDepthMap[x+(y+1)*xres])/maxdepth*1020));
+			glTexCoord2f(static_cast<float>(x)/static_cast<float>(640), static_cast<float>(y)/static_cast<float>(480)); glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*1020));
+			glTexCoord2f(static_cast<float>(x)/static_cast<float>(640), static_cast<float>(y+1)/static_cast<float>(480)); glVertex3f(x, (yres-y-1), (1020-static_cast<float>(pDepthMap[x+(y+1)*xres])/maxdepth*1020));
+			if(abs(pDepthMap[x+y*xres+1]-pDepthMap[x+y*xres])>=100) {
+				glEnd();
+				glBegin(GL_TRIANGLE_STRIP);
+			}
 		}
 		glEnd();
 	}
-
-	/*			glColor3f(static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth),
-				static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth),
-				static_cast<float>(pDepthMap[x+y+y*(pDepthMapMD.XRes()-1)])/static_cast<float>(maxdepth));	// DEPTHMAP */
-
-	/*			
-*/
-
+	glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
 	glutSwapBuffers();
-//	datei.close();
-//	exit(-1);
 }
 
 int main(int argc, char **argv) {
@@ -197,19 +206,30 @@ int main(int argc, char **argv) {
 	/* Glut initialisieren */
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutInitWindowSize(640, 480);
+	glutInitWindowSize(WINDOW_SIZE_X, WINDOW_SIZE_Y);
 	glutInitWindowPosition(300,150);
-	win = glutCreateWindow("Daniels und Marcels 3D Welt");
+	win = glutCreateWindow("kinect-head-tracking");
 	glClearColor(0.3, 0.4, 0.7, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
 //	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
 //	glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GEQUAL, 1);
+//	glEnable(GL_ALPHA_TEST);
+//	glAlphaFunc(GL_GEQUAL, 1);
 
+	/* Texturen */
+	glGenTextures(1, &texture_rgb);
+	glBindTexture(GL_TEXTURE_2D, texture_rgb);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glGenTextures(1, &texture_depth);
+	glBindTexture(GL_TEXTURE_2D, texture_depth);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	glutDisplayFunc(glut_display);
 	glutIdleFunc(glut_idle);
 	glutMouseFunc(glut_mouse);
+	glutMotionFunc(glut_mouse_motion);
 	glutMainLoop();
 	return 0;
 }
