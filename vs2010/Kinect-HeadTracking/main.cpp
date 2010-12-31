@@ -146,19 +146,17 @@ void glut_display() {
 	glTranslatef(50, -200, -3000);
 	glRotatef(cx,0,1,0);
 	glRotatef(cy,1,0,0);
-	glBindTexture(GL_TEXTURE_2D, texture_rgb);
+	glBindTexture(GL_TEXTURE_2D, texture_depth);
+	glBegin(GL_POINTS);
 	for(unsigned int y=0; y<yres-1; y++) {
-		glBegin(GL_TRIANGLE_STRIP);
-		for(unsigned int x=0; x<xres; x++) {
-			glTexCoord2f(static_cast<float>(x)/static_cast<float>(640), static_cast<float>(y)/static_cast<float>(480)); glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*1020));
-			glTexCoord2f(static_cast<float>(x)/static_cast<float>(640), static_cast<float>(y+1)/static_cast<float>(480)); glVertex3f(x, (yres-y-1), (1020-static_cast<float>(pDepthMap[x+(y+1)*xres])/maxdepth*1020));
-			if(abs(pDepthMap[x+y*xres+1]-pDepthMap[x+y*xres])>=100) {
-				glEnd();
-				glBegin(GL_TRIANGLE_STRIP);
+		for(unsigned int x=0; x<630; x++) {
+			if(pDepthMap[x+y*xres]>=100) {
+				glTexCoord2f(static_cast<float>(x)/static_cast<float>(630), static_cast<float>(y)/static_cast<float>(480)); 
+				glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*1020));
 			}
 		}
-		glEnd();
 	}
+	glEnd();
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 	glutSwapBuffers();
@@ -209,7 +207,7 @@ int main(int argc, char **argv) {
 	glutInitWindowSize(WINDOW_SIZE_X, WINDOW_SIZE_Y);
 	glutInitWindowPosition(300,150);
 	win = glutCreateWindow("kinect-head-tracking");
-	glClearColor(0.3, 0.4, 0.7, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
+	glClearColor(0, 0, 0, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
 //	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
 //	glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
 //	glEnable(GL_ALPHA_TEST);
