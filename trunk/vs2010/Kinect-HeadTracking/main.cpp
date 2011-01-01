@@ -37,6 +37,14 @@ int oy = 0;
 bool lp = false;
 int maxdepth=-1;
 
+struct WorldPos {
+	int v[640*480];
+};
+
+//WorldPos aWorldPos[maxdepth];
+
+float scalex=0.9, scaley=0.9, transx=41, transy=35;
+
 bool checkError(string message, XnStatus nRetVal) {
 	if(nRetVal != XN_STATUS_OK) {
 		cout << message << ": " << xnGetStatusString(nRetVal) << endl;
@@ -50,6 +58,37 @@ void glut_mouse_motion(int x, int y) {
 		cx = x-fx+ox;
 		cy = fy-y+oy;
 	}
+}
+
+void glut_keyboard(unsigned char key, int x, int y) {
+	switch(key) {
+	case 'q':
+		scalex-=0.01;
+		break;
+	case 'a':
+		scalex+=0.01;
+		break;
+	case 'w':
+		scaley-=0.01;
+		break;
+	case 's': 
+		scaley+=0.01;
+		break;
+	case 'e':
+		transx++;
+		break;
+	case 'd':
+		transx--;
+		break;
+	case 'r':
+		transy++;
+		break;
+	case 'f':
+		transy--;
+		break;
+	}
+
+	cout << "Scale X: " << scalex << "\tScale Y: " << scaley << "\tTrans X: " << transx << "\tTrans Y: " << transy << endl;
 }
 
 void glut_mouse(int button, int state, int x, int y) {
@@ -100,9 +139,9 @@ void glut_display() {
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 //	glTranslatef(-12.8/640.0, 9.0/480.0, 0);
-//	glTranslatef(40.0/630.0, 18.0/480.0,0);
-	glScalef(1.0/1.087, 1.0/1.083, 1.0);	
-	glTranslatef(0.5, 0.5, 0.0);
+//	glTranslatef(-12.8/630.0, 9.0/480.0,0);
+	glScalef(scalex, scaley, 1.0);
+	glTranslatef(transx/630, transy/480, 0.0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -141,6 +180,7 @@ void glut_display() {
 		}
 	}
 
+	/*
 	glEnable(GL_TEXTURE_2D);
 	glPushMatrix();
 	glLoadIdentity();
@@ -166,14 +206,17 @@ void glut_display() {
 		glTexCoord2f(1,0); glVertex3f(640,480,0);
 		glTexCoord2f(0,0); glVertex3f(0,480,0);
 	glEnd();
-	glPopMatrix();
+	glPopMatrix();*/
 
 	glPushMatrix();
 	glLoadIdentity();
-	glTranslatef(300, -200, -3000);
+	glTranslatef(-100, -100, -2000);
 	glRotatef(cx,0,1,0);
 	glRotatef(cy,1,0,0);
+	glTranslatef(-320, -240, 1000);
+	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, texture_rgb);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 640, 480, 0, GL_RGB, GL_UNSIGNED_BYTE, pImageMap);
 	glBegin(GL_POINTS);
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<630; x++) {
@@ -187,7 +230,6 @@ void glut_display() {
 		}
 	}
 	glEnd();
-	cout << pDepthMap[320+240*640] << endl;
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 	glutSwapBuffers();
@@ -242,7 +284,8 @@ int main(int argc, char **argv) {
 	glutInitWindowPosition(300,150);
 	win = glutCreateWindow("kinect-head-tracking");
 	glClearColor(0, 0, 0, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
-//	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
+	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
+	glDepthFunc(GL_LEQUAL);
 //	glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
 //	glEnable(GL_ALPHA_TEST);
 //	glAlphaFunc(GL_GEQUAL, 1);
@@ -267,6 +310,7 @@ int main(int argc, char **argv) {
 	glutIdleFunc(glut_idle);
 	glutMouseFunc(glut_mouse);
 	glutMotionFunc(glut_mouse_motion);
+	glutKeyboardFunc(glut_keyboard);
 	glutMainLoop();
 	return 0;
 }
