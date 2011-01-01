@@ -16,6 +16,8 @@ using namespace std;
 #define WINDOW_SIZE_X 800
 #define WINDOW_SIZE_Y 600
 
+//#define DEBUGOUT
+
 
 /* Globals */
 static int win;
@@ -83,7 +85,9 @@ float rot_angle=0;
 void glut_display() {
 	xn::DepthMetaData pDepthMapMD;
 	xn::ImageMetaData pImageMapMD;
+#ifdef DEBUGOUT
 	ofstream datei;
+#endif
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -92,6 +96,13 @@ void glut_display() {
 	glLoadIdentity();
 	gluPerspective(45, WINDOW_SIZE_X/WINDOW_SIZE_Y, 0, 5000);
 //	glOrtho(0, WINDOW_SIZE_X, WINDOW_SIZE_Y, 0, -128, 128);
+
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+//	glTranslatef(-12.8/640.0, 9.0/480.0, 0);
+//	glTranslatef(40.0/630.0, 18.0/480.0,0);
+	glScalef(1.0/1.087, 1.0/1.083, 1.0);	
+	glTranslatef(0.5, 0.5, 0.0);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -119,7 +130,10 @@ void glut_display() {
 //	XnDepthPixel maxdepth = depth.GetDeviceMaxDepth();
 	const unsigned int xres = pDepthMapMD.XRes();
 	const unsigned int yres = pDepthMapMD.YRes();
-//	datei.open("daniel.txt", ios::out);
+
+#ifdef DEBUGOUT
+	datei.open("daniel.txt", ios::out);
+#endif
 
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<xres; x++) {
@@ -143,7 +157,7 @@ void glut_display() {
 
 	glPushMatrix();
 	glLoadIdentity();
-	glTranslatef(-800, -600, -2000);
+	glTranslatef(-800, 600, -2000);
 	glBindTexture(GL_TEXTURE_2D, texture_depth);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, 640, 480, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, aDepthMap);
 	glBegin(GL_QUADS);
@@ -163,18 +177,24 @@ void glut_display() {
 	glBegin(GL_POINTS);
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<630; x++) {
-			if(pDepthMap[x+y*xres]>=50) {
+			if(pDepthMap[x+y*xres]!=0) {
 				glTexCoord2f(static_cast<float>(x)/static_cast<float>(630), static_cast<float>(y)/static_cast<float>(480)); 
-				glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*3000));
+				glVertex3f(x, (yres-y), -pDepthMap[x+y*xres]/2.00);
+#ifdef DEBUGOUT
+				datei << t_gamma[pDepthMap[x+y*xres]] << endl;
+#endif
 			}
 		}
 	}
 	glEnd();
+	cout << pDepthMap[320+240*640] << endl;
 	glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
 	glutSwapBuffers();
-//	datei.close();
-//	exit(-1);
+#ifdef DEBUGOUT
+	datei.close();
+	exit(-1);
+#endif
 }
 
 int main(int argc, char **argv) {
@@ -211,7 +231,6 @@ int main(int argc, char **argv) {
 	nRetVal = image.SetMapOutputMode(outputModeImage);
 	checkError("Fehler beim Konfigurieren des Bildgenerators", nRetVal)?0:exit(-1);	
 
-
 	/* Starten der Generatoren - volle Kraft vorraus! */
 	nRetVal = context.StartGeneratingAll();
 	checkError("Fehler beim Starten der Generatoren", nRetVal)?0:exit(-1);
@@ -233,11 +252,16 @@ int main(int argc, char **argv) {
 	glBindTexture(GL_TEXTURE_2D, texture_rgb);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
 
 	glGenTextures(1, &texture_depth);
 	glBindTexture(GL_TEXTURE_2D, texture_depth);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 	glutDisplayFunc(glut_display);
 	glutIdleFunc(glut_idle);
