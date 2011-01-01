@@ -111,7 +111,6 @@ void glut_display() {
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<xres; x++) {
 			aDepthMap[x+y*xres] = static_cast<GLubyte>(static_cast<float>(pDepthMap[x+y*xres])/static_cast<float>(maxdepth)*255);
-//			datei << x << " "  << y << " " << pDepthMap[x+y*xres] << " " << static_cast<int>(pImageMap[x+y*xres].nRed) << " " << static_cast<int>(pImageMap[x+y*xres].nGreen) << " " << static_cast<int>(pImageMap[x+y*xres].nBlue) << endl;
 		}
 	}
 
@@ -144,16 +143,16 @@ void glut_display() {
 
 	glPushMatrix();
 	glLoadIdentity();
-	glTranslatef(50, -200, -3000);
+	glTranslatef(300, -200, -3000);
 	glRotatef(cx,0,1,0);
 	glRotatef(cy,1,0,0);
-	glBindTexture(GL_TEXTURE_2D, texture_depth);
+	glBindTexture(GL_TEXTURE_2D, texture_rgb);
 	glBegin(GL_POINTS);
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<630; x++) {
 			if(pDepthMap[x+y*xres]>=100) {
 				glTexCoord2f(static_cast<float>(x)/static_cast<float>(630), static_cast<float>(y)/static_cast<float>(480)); 
-				glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*1020));
+				glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*3000));
 			}
 		}
 	}
