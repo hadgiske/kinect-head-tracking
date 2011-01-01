@@ -133,7 +133,7 @@ void glut_display() {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPerspective(45, WINDOW_SIZE_X/WINDOW_SIZE_Y, 0, 5000);
+	gluPerspective(45, WINDOW_SIZE_X/WINDOW_SIZE_Y, 1000, 5000);
 //	glOrtho(0, WINDOW_SIZE_X, WINDOW_SIZE_Y, 0, -128, 128);
 
 	glMatrixMode(GL_TEXTURE);
