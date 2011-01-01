@@ -33,7 +33,7 @@ int cy = 0;
 int ox = 0;
 int oy = 0;
 bool lp = false;
-
+int maxdepth=-1;
 
 bool checkError(string message, XnStatus nRetVal) {
 	if(nRetVal != XN_STATUS_OK) {
@@ -69,6 +69,16 @@ void glut_idle() {
 	glutPostRedisplay();
 }
 
+int getMaxDepth(const XnDepthPixel* depthmap, int size=640*480) {
+	int max_tmp=0;
+	for(int i=0; i<size; i++) {
+		if(depthmap[i]>max_tmp)
+			max_tmp=depthmap[i];
+	}
+	
+	return max_tmp;
+}
+
 float rot_angle=0;
 void glut_display() {
 	xn::DepthMetaData pDepthMapMD;
@@ -97,13 +107,16 @@ void glut_display() {
 	// Aktuelle Depthmap auslesen
 	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
 
+	if(maxdepth==-1)
+		maxdepth = getMaxDepth(pDepthMap);
+
 	// Aktuelle Image Metadaten auslesen 
 	image.GetMetaData(pImageMapMD);
 	//Aktuelles Bild auslesen
 	const XnRGB24Pixel* pImageMap = image.GetRGB24ImageMap();
 
 	glColor3f(1, 1, 1);
-	XnDepthPixel maxdepth = depth.GetDeviceMaxDepth();
+//	XnDepthPixel maxdepth = depth.GetDeviceMaxDepth();
 	const unsigned int xres = pDepthMapMD.XRes();
 	const unsigned int yres = pDepthMapMD.YRes();
 //	datei.open("daniel.txt", ios::out);
@@ -150,7 +163,7 @@ void glut_display() {
 	glBegin(GL_POINTS);
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<630; x++) {
-			if(pDepthMap[x+y*xres]>=100) {
+			if(pDepthMap[x+y*xres]>=50) {
 				glTexCoord2f(static_cast<float>(x)/static_cast<float>(630), static_cast<float>(y)/static_cast<float>(480)); 
 				glVertex3f(x, (yres-y), (1020-static_cast<float>(pDepthMap[x+y*xres])/maxdepth*3000));
 			}
