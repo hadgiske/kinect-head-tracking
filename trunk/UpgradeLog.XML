@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="Kinect-HeadTracking">
+</Property><Property Name="Projektmappendatei" Value="C:\Users\Marcel\Documents\Visual Studio 2010\Projects\Kinect-HeadTracking\vs2010\Kinect-HeadTracking.sln">
+</Property><Property Name="Date" Value="Freitag, 31. Dezember 2010">
+</Property><Property Name="Time" Value="11:36">
+</Property></Properties><Event ErrorLevel="0" Project="Kinect-HeadTracking" Source="Kinect-HeadTracking\Kinect-HeadTracking.vcproj" Description="Converting project file 'C:\Users\Marcel\Documents\Visual Studio 2010\Projects\Kinect-HeadTracking\vs2010\Kinect-HeadTracking\Kinect-HeadTracking.vcproj'.">
+</Event><Event ErrorLevel="1" Project="Kinect-HeadTracking" Source="Kinect-HeadTracking\Kinect-HeadTracking.vcproj" Description="VCWebServiceProxyGeneratorTool is no longer supported. The tool has been removed from your project settings.">
+</Event><Event ErrorLevel="0" Project="Kinect-HeadTracking" Source="Kinect-HeadTracking\Kinect-HeadTracking.vcproj" Description="Done converting to new project file 'C:\Users\Marcel\Documents\Visual Studio 2010\Projects\Kinect-HeadTracking\vs2010\Kinect-HeadTracking\Kinect-HeadTracking.vcxproj'.">
+</Event><Event ErrorLevel="3" Project="Kinect-HeadTracking" Source="Kinect-HeadTracking\Kinect-HeadTracking.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="Kinect-HeadTracking.sln" Description="Die Projektmappe wurde erfolgreich konvertiert.">
+</Event><Event ErrorLevel="3" Project="" Source="Kinect-HeadTracking.sln" Description="Converted">
+</Event></UpgradeLog>
