@@ -1,5 +1,6 @@
 // Allgemein
 #include <iostream>
+#include <stdlib.h>
 #include <string>
 // Glut
 #include <GL/glut.h>
@@ -18,6 +19,13 @@ using namespace std;
 //#define DEBUGOUT
 
 /* Structs */
+struct HeadTransformation {
+	int x;
+	int y;
+	int z;
+	double rotmat[16];
+} headtrans = { 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+
 struct Mouse {
 	int fx;			/* First click position */
 	int fy;
@@ -42,12 +50,6 @@ bool printFile = false;
 bool calibration = false;
 int maxdepth=-1;
 
-struct WorldPos {
-	int v[640*480];
-};
-
-//WorldPos aWorldPos[maxdepth];
-
 float scalex=0.9, scaley=0.9, transx=41, transy=35;
 
 bool checkError(string message, XnStatus nRetVal) {
@@ -57,6 +59,16 @@ bool checkError(string message, XnStatus nRetVal) {
 	}
 	return true;
 }
+
+void clearScreen() {
+#if defined(WIN32)
+	system("cls");
+#endif
+#if defined(LINUX)
+	system("clear");
+#endif
+}
+
 
 void glut_mouse_motion(int x, int y) {
 	if(mouse.left) {
@@ -156,34 +168,12 @@ void glut_display() {
 	xn::ImageMetaData pImageMapMD;
 	XnUserID pUser[2];
 	XnUInt16 nUsers=2;
-	double* matrix = new double[16];
 #ifdef DEBUGOUT
 	ofstream datei;
 #endif
 
 	pUser[0] = 0;
 	pUser[1] = 0;
-
-
-				matrix[0] = 1;
-				matrix[1] = 0;
-				matrix[2] = 0;
-				matrix[3] = 0;
-
-				matrix[4] = 0;
-				matrix[5] = 1;
-				matrix[6] = 0;
-				matrix[7] = 0;
-
-				matrix[8] = 0;
-				matrix[9] = 0;
-				matrix[10] = 1;
-				matrix[11] = 0;
-
-				matrix[12] = 0;
-				matrix[13] = 0;
-				matrix[14] = 0;
-				matrix[15] = 1;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -223,56 +213,86 @@ void glut_display() {
 	}
 
 	pSkeleton.SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
-	XnUInt16 qty_joints=24;
 	if(pSkeleton.IsCalibrated(pUser[0])) {
 		XnSkeletonJointTransformation head;
 		pSkeleton.StartTracking(pUser[0]);
 		pSkeleton.GetSkeletonJoint(pUser[0], XN_SKEL_HEAD, head);
 
-		cout	<< " "   << "Confidence Position: " << head.position.fConfidence
-				<< " X: " << head.position.position.X
-				<< " Y: " << head.position.position.Y
-				<< " Z: " << head.position.position.Z << endl
-				<< "Confidence Rotation: " << head.orientation.fConfidence << endl
-				<< "\t" << head.orientation.orientation.elements[0]
-				<< "\t" << head.orientation.orientation.elements[3]
-				<< "\t" << head.orientation.orientation.elements[6] << endl
-				<< "\t" << head.orientation.orientation.elements[1]
-				<< "\t" << head.orientation.orientation.elements[4]
-				<< "\t" << head.orientation.orientation.elements[7] << endl
-				<< "\t" << head.orientation.orientation.elements[2]
-				<< "\t" << head.orientation.orientation.elements[5]
-				<< "\t" << head.orientation.orientation.elements[8];	
+		if(head.position.fConfidence && head.orientation.fConfidence) {
+			headtrans.rotmat[0] = head.orientation.orientation.elements[0];
+			headtrans.rotmat[1] = head.orientation.orientation.elements[1];
+			headtrans.rotmat[2] = head.orientation.orientation.elements[2];
+			headtrans.rotmat[3] = 0;
+			
+			headtrans.rotmat[4] = head.orientation.orientation.elements[3];
+			headtrans.rotmat[5] = head.orientation.orientation.elements[4];
+			headtrans.rotmat[6] = head.orientation.orientation.elements[5];
+			headtrans.rotmat[7] = 0;
+			
+			headtrans.rotmat[8] = -head.orientation.orientation.elements[6];
+			headtrans.rotmat[9] = -head.orientation.orientation.elements[7];
+			headtrans.rotmat[10] =-head.orientation.orientation.elements[8];
+			headtrans.rotmat[11] = 0;
 
-				matrix[0] = head.orientation.orientation.elements[0];
-				matrix[1] = head.orientation.orientation.elements[1];
-				matrix[2] = head.orientation.orientation.elements[2];
-				matrix[3] = 0;
+			headtrans.rotmat[12] = 0;
+			headtrans.rotmat[13] = 0;
+			headtrans.rotmat[14] = 0;
+			headtrans.rotmat[15] = 1;
 
-				matrix[4] = head.orientation.orientation.elements[3];
-				matrix[5] = head.orientation.orientation.elements[4];
-				matrix[6] = head.orientation.orientation.elements[5];
-				matrix[7] = 0;
+			headtrans.x = head.position.position.X;
+			headtrans.y = head.position.position.Y;
+			headtrans.z = head.position.position.Z;
+			
+			 
 
-				matrix[8] = -head.orientation.orientation.elements[6];
-				matrix[9] = -head.orientation.orientation.elements[7];
-				matrix[10] =-head.orientation.orientation.elements[8];
-				matrix[11] = 0;
+			clearScreen();
+			cout	<< "Confidence Position: " << head.position.fConfidence
+					<< " X: " << head.position.position.X
+					<< " Y: " << head.position.position.Y
+					<< " Z: " << head.position.position.Z << endl
 
-				matrix[12] = 0;
-				matrix[13] = 0;
-				matrix[14] = 0;
-				matrix[15] = 1;
+					<< "Confidence Rotation: " << head.orientation.fConfidence << endl
+					<< "\t" << headtrans.rotmat[0]
+					<< "\t" << headtrans.rotmat[4]
+					<< "\t" << headtrans.rotmat[8] << endl
+					<< "\t" << headtrans.rotmat[1]
+					<< "\t" << headtrans.rotmat[5]
+					<< "\t" << headtrans.rotmat[9] << endl
+					<< "\t" << headtrans.rotmat[2]
+					<< "\t" << headtrans.rotmat[6]
+					<< "\t" << headtrans.rotmat[10] << endl << endl;
+		}
+
+		XnSkeletonJointPosition position;
+		pSkeleton.GetSkeletonJointPosition(pUser[0],XN_SKEL_TORSO,position);
+		glPushMatrix();
+		glLoadIdentity();
+		
+		glTranslatef(-position.position.X, position.position.Y, -position.position.Z-50);
+
+		cout	<< "Confidence Position: " << head.position.fConfidence
+					<< " X: " << position.position.X
+					<< " Y: " << position.position.Y
+					<< " Z: " << position.position.Z << endl;
+
+
+		
+		
+		glutSolidSphere(50, 20, 20);
+
+		glPopMatrix();
+
+
+
 	}
 
-	glTranslatef(0, 0, -50);
+	glTranslatef(-headtrans.x, headtrans.y,-headtrans.z -50);
 	glRotatef(mouse.cx,0,1,0);
 	glRotatef(-mouse.cy,1,0,0);
 
-	glMultMatrixd(matrix);
-	glutSolidCube(10);
+	glMultMatrixd(headtrans.rotmat);
+	glutSolidCube(50);
 
-	delete [] matrix;
 
 /*	// Aktuelle Depth Metadaten auslesen
 	depth.GetMetaData(pDepthMapMD);
