@@ -24,7 +24,7 @@ static int win;
 xn::Context context;
 xn::DepthGenerator depth;
 xn::ImageGenerator image;
-xn::SceneAnalyzer scene;
+xn::UserGenerator user;
 XnStatus nRetVal;
 GLuint texture_rgb, texture_depth;
 GLubyte aDepthMap[640*480];
@@ -37,6 +37,7 @@ int ox = 0;
 int oy = 0;
 bool lp = false;
 bool printFile = false;
+bool calibration = false;
 int maxdepth=-1;
 
 struct WorldPos {
@@ -91,6 +92,9 @@ void glut_keyboard(unsigned char key, int x, int y) {
 	case 'p':
 		printFile = true;
 		break;
+	case 'c':
+		calibration = true;
+		break;
 	}
 
 	cout << "Scale X: " << scalex << "\tScale Y: " << scaley << "\tTrans X: " << transx << "\tTrans Y: " << 
@@ -126,11 +130,25 @@ int getMaxDepth(const XnDepthPixel* depthmap, int size=640*480) {
 	return max_tmp;
 }
 
+void _stdcall skel_cal(xn::SkeletonCapability& skeleton, XnUserID user, void* pCookie){
+	cout << "Calibration" << endl;
+}
+
+void _stdcall skel_cal_end(xn::SkeletonCapability& skeleton, XnUserID user, XnBool bSuccess, void* pCookie){
+	cout << "Calibration end" << endl;
+}
+
 float rot_angle=0;
 void glut_display() {
 	xn::DepthMetaData pDepthMapMD;
 	xn::ImageMetaData pImageMapMD;
-	xn::SceneMetaData pSceneMapMD;
+	XnUserID pUser[2];
+	XnUInt16 nUsers=2;
+	pUser[0] = 0;
+	pUser[1] = 0;
+	
+	double* matrix = new double[16];
+
 #ifdef DEBUGOUT
 	ofstream datei;
 #endif
@@ -140,15 +158,15 @@ void glut_display() {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPerspective(45, WINDOW_SIZE_X/WINDOW_SIZE_Y, 1000, 5000);
+	gluPerspective(45, WINDOW_SIZE_X/WINDOW_SIZE_Y, 1, 5000);
 //	glOrtho(0, WINDOW_SIZE_X, WINDOW_SIZE_Y, 0, -128, 128);
 
-	glMatrixMode(GL_TEXTURE);
+/*	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 //	glTranslatef(-12.8/640.0, 9.0/480.0, 0);
 //	glTranslatef(-12.8/630.0, 9.0/480.0,0);
 	glScalef(scalex, scaley, 1.0);
-	glTranslatef(transx/630, transy/480, 0.0);
+	glTranslatef(transx/630, transy/480, 0.0);*/
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -159,10 +177,95 @@ void glut_display() {
 	nRetVal = context.WaitAndUpdateAll();
 	checkError("Fehler beim Aktualisieren der Daten", nRetVal);
 
-	scene.GetMetaData(pSceneMapMD);
-	const XnLabel* pSceneMap =  scene.GetLabelMap();
+	user.GetUsers(pUser, nUsers);
 
-	// Aktuelle Depth Metadaten auslesen
+	cout << pUser[0];
+	xn::SkeletonCapability pSkeleton = user.GetSkeletonCap();
+	cout << " " << pSkeleton.IsCalibrated(pUser[0]) << " ";
+	XnSkeletonJoint* joints;
+	XnCallbackHandle bla;
+	pSkeleton.RegisterCalibrationCallbacks(skel_cal,skel_cal_end,0,bla);
+	
+	if(calibration){
+		pSkeleton.RequestCalibration(pUser[0],true);
+		calibration = false;
+		cout << "Bitte  laecheln" << endl;
+	}
+
+//	pSkeleton.SetJointActive(XN_SKEL_LEFT_HAND,true);
+	pSkeleton.SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+
+	XnUInt16 qty_joints=24;
+	if(pSkeleton.IsCalibrated(pUser[0])) {
+		pSkeleton.StartTracking(pUser[0]);
+		joints = new XnSkeletonJoint[24];
+		pSkeleton.EnumerateActiveJoints(joints, qty_joints);
+		for(int i=0; i<qty_joints; i++) {
+			if(joints[i]==XN_SKEL_HEAD)
+				cout << " Kopf erkannt!" ;
+		}
+
+		delete [] joints;
+	}
+
+	if(pSkeleton.IsCalibrated(pUser[0])){
+		XnSkeletonJointTransformation skeltranslh;
+	
+		pSkeleton.GetSkeletonJoint(pUser[0],XN_SKEL_HEAD,skeltranslh);
+
+		cout	<< " "   << "Confidence Position: " << skeltranslh.position.fConfidence
+				<< " X: " << skeltranslh.position.position.X
+				<< " Y: " << skeltranslh.position.position.Y
+				<< " Z: " << skeltranslh.position.position.Z << endl
+				<< "Confidence Rotation: " << skeltranslh.orientation.fConfidence << endl
+				<< "\t" << skeltranslh.orientation.orientation.elements[0]
+				<< "\t" << skeltranslh.orientation.orientation.elements[3]
+				<< "\t" << skeltranslh.orientation.orientation.elements[6] << endl
+				<< "\t" << skeltranslh.orientation.orientation.elements[1]
+				<< "\t" << skeltranslh.orientation.orientation.elements[4]
+				<< "\t" << skeltranslh.orientation.orientation.elements[7] << endl
+				<< "\t" << skeltranslh.orientation.orientation.elements[2]
+				<< "\t" << skeltranslh.orientation.orientation.elements[5]
+				<< "\t" << skeltranslh.orientation.orientation.elements[8];	
+
+				matrix[0] = skeltranslh.orientation.orientation.elements[0];
+				matrix[1] = skeltranslh.orientation.orientation.elements[1];
+				matrix[2] = skeltranslh.orientation.orientation.elements[2];
+				matrix[3] = 0;
+
+				matrix[4] = skeltranslh.orientation.orientation.elements[3];
+				matrix[5] = skeltranslh.orientation.orientation.elements[4];
+				matrix[6] = skeltranslh.orientation.orientation.elements[5];
+				matrix[7] = 0;
+
+				matrix[8] = -skeltranslh.orientation.orientation.elements[6];
+				matrix[9] = -skeltranslh.orientation.orientation.elements[7];
+				matrix[10] =-skeltranslh.orientation.orientation.elements[8];
+				matrix[11] = 0;
+
+				matrix[12] = 0;
+				matrix[13] = 0;
+				matrix[14] = 0;
+				matrix[15] = 1;
+
+
+
+	}
+
+
+
+	cout << endl;
+
+	glTranslatef(0, 0, -50);
+	glRotatef(cx,0,1,0);
+	glRotatef(-cy,1,0,0);
+
+	glMultMatrixd(matrix);
+	glutSolidCube(10);
+
+	delete [] matrix;
+
+/*	// Aktuelle Depth Metadaten auslesen
 	depth.GetMetaData(pDepthMapMD);
 	// Aktuelle Depthmap auslesen
 	const XnDepthPixel* pDepthMap = depth.GetDepthMap();
@@ -186,26 +289,14 @@ void glut_display() {
 #endif
 
 
-	for(unsigned int y=0; y<pSceneMapMD.YRes()-1; y++) {
-		for(unsigned int x=0; x<pSceneMapMD.XRes(); x++) {
-			if(printFile)
-				datei << pSceneMap[x+y*pSceneMapMD.XRes()]; 
-/*			if(pSceneMap[x+y*pSceneMapMD.XRes()]!=0) 
-				cout << pSceneMap[x+y*pSceneMapMD.XRes()] << endl;*/
-		}
-		if(printFile)
-			datei << endl;
-	}
-
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<xres; x++) {
-			aDepthMap[x+y*xres] = static_cast<GLubyte>(static_cast<float>(pDepthMap[x
-+y*xres])/static_cast<float>(maxdepth)*255);
+			aDepthMap[x+y*xres] = static_cast<GLubyte>(static_cast<float>(pDepthMap[x+y*xres])/static_cast<float>(maxdepth)*255);
 		}
 	}
 	
 
-	/*
+	
 	glEnable(GL_TEXTURE_2D);
 	glPushMatrix();
 	glLoadIdentity();
@@ -232,7 +323,7 @@ void glut_display() {
 		glTexCoord2f(0,0); glVertex3f(0,480,0);
 	glEnd();
 	glPopMatrix();*/
-
+/*
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef(-100, -100, -2000);
@@ -246,14 +337,14 @@ void glut_display() {
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<630; x++) {
 			if(pDepthMap[x+y*xres]!=0) {
-				glTexCoord2f(static_cast<float>(x)/static_cast<float>(630), static_cast<float>
-(y)/static_cast<float>(480)); 
+				glTexCoord2f(static_cast<float>(x)/static_cast<float>(630), static_cast<float>(y)/static_cast<float>(480)); 
 				glVertex3f(x, (yres-y), -pDepthMap[x+y*xres]/2.00);
 			}
 		}
 	}
 	glEnd();
-	glPopMatrix();
+	glPopMatrix();*/
+
 	glDisable(GL_TEXTURE_2D);
 	glutSwapBuffers();
 #ifdef DEBUGOUT
@@ -299,8 +390,8 @@ int main(int argc, char **argv) {
 	checkError("Fehler beim Konfigurieren des Bildgenerators", nRetVal)?0:exit(-1);	
 
 	/* SceneAnalzer einstellen */
-	nRetVal = scene.Create(context);
-	checkError("Fehler beim Konfigurieren des Szenenanalisierers", nRetVal)?0:exit(-1);
+	nRetVal = user.Create(context);
+	checkError("Fehler beim Konfigurieren des Usergenerators", nRetVal)?0:exit(-1);
 
 
 	/* Starten der Generatoren - volle Kraft vorraus! */
@@ -316,6 +407,8 @@ int main(int argc, char **argv) {
 	glClearColor(0, 0, 0, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
 	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
 	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 //	glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
 //	glEnable(GL_ALPHA_TEST);
 //	glAlphaFunc(GL_GEQUAL, 1);
