@@ -110,11 +110,11 @@ void init_wpos(){
 
 }
 
-void refresh_wpos(){
-	wpos[0].SetOffset(mouse.cx,mouse.cy,0);	
-	wpos[1].SetOffset(mouse.cx,mouse.cy,0);	
-	wpos[2].SetOffset(mouse.cx,mouse.cy,0);
-	wpos[3].SetOffset(mouse.cx,mouse.cy,0);
+void refresh_wpos(float cx, float cy, float cz){
+	wpos[0].SetOffset(cx,cy,0);	
+	wpos[1].SetOffset(cx,cy,0);	
+	wpos[2].SetOffset(cx,cy,0);
+	wpos[3].SetOffset(cx,cy,0);
 }
 
 WorldPos getNormal(WorldPos first, WorldPos second){
@@ -354,7 +354,78 @@ void glut_display() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	refresh_wpos();
+	nRetVal = context.WaitAndUpdateAll();
+	checkError("Fehler beim Aktualisieren der Daten", nRetVal);
+
+	/* Anzahl der User auslesen und in Objekten speichern */
+	user.GetUsers(pUser, nUsers);
+	if(pUser[0]!=0 && pUserOld!=1) {
+		cout << "User 1 erkannt" << endl;
+		pUserOld=1;
+	}
+
+	xn::SkeletonCapability pSkeleton = user.GetSkeletonCap();
+	XnCallbackHandle hnd;
+	pSkeleton.RegisterCalibrationCallbacks(skel_cal_start, skel_cal_end, 0,hnd);
+	
+	if(calibration){
+		pSkeleton.RequestCalibration(pUser[0],true);
+		calibration = false;
+		cout << "Kalibration wird gestartet, bitte Arme im 90 Grad Winkel nach oben halten." << endl;
+	}
+
+	pSkeleton.SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+	if(pSkeleton.IsCalibrated(pUser[0])) {
+		XnSkeletonJointTransformation head;
+		pSkeleton.StartTracking(pUser[0]);
+		pSkeleton.GetSkeletonJoint(pUser[0], XN_SKEL_HEAD, head);
+
+		if(head.position.fConfidence && head.orientation.fConfidence) {
+			headtrans.rotmat[0] = head.orientation.orientation.elements[0];
+			headtrans.rotmat[1] = head.orientation.orientation.elements[1];
+			headtrans.rotmat[2] = head.orientation.orientation.elements[2];
+			headtrans.rotmat[3] = 0;
+			
+			headtrans.rotmat[4] = head.orientation.orientation.elements[3];
+			headtrans.rotmat[5] = head.orientation.orientation.elements[4];
+			headtrans.rotmat[6] = head.orientation.orientation.elements[5];
+			headtrans.rotmat[7] = 0;
+			
+			headtrans.rotmat[8] = -head.orientation.orientation.elements[6];
+			headtrans.rotmat[9] = -head.orientation.orientation.elements[7];
+			headtrans.rotmat[10] =-head.orientation.orientation.elements[8];
+			headtrans.rotmat[11] = 0;
+
+			headtrans.rotmat[12] = 0;
+			headtrans.rotmat[13] = 0;
+			headtrans.rotmat[14] = 0;
+			headtrans.rotmat[15] = 1;
+
+			headtrans.x = head.position.position.X;
+			headtrans.y = head.position.position.Y;
+			headtrans.z = head.position.position.Z;
+			
+			 
+
+			clearScreen();
+			cout	<< "Confidence Position: " << head.position.fConfidence
+					<< " X: " << head.position.position.X
+					<< " Y: " << head.position.position.Y
+					<< " Z: " << head.position.position.Z << endl
+
+					<< "Confidence Rotation: " << head.orientation.fConfidence << endl
+					<< "\t" << headtrans.rotmat[0]
+					<< "\t" << headtrans.rotmat[4]
+					<< "\t" << headtrans.rotmat[8] << endl
+					<< "\t" << headtrans.rotmat[1]
+					<< "\t" << headtrans.rotmat[5]
+					<< "\t" << headtrans.rotmat[9] << endl
+					<< "\t" << headtrans.rotmat[2]
+					<< "\t" << headtrans.rotmat[6]
+					<< "\t" << headtrans.rotmat[10] << endl << endl;
+		}
+	}
+	refresh_wpos(-headtrans.x/10, headtrans.y/10, headtrans.z/10);
 
 	//------------------------------------------------------------------------------------------
 	//BEGIN: Kamera-Test
@@ -379,6 +450,50 @@ void glut_display() {
 }
 
 int main(int argc, char **argv) {
+
+	nRetVal = XN_STATUS_OK;
+
+	/* Context initialisieren (Kameradaten) */
+	nRetVal = context.Init();
+	checkError("Fehler beim Initialisieren des Context", nRetVal)?0:exit(-1);
+
+
+
+	/* Tiefengenerator erstellen */
+	nRetVal = depth.Create(context);
+	checkError("Fehler beim Erstellen des Tiefengenerators", nRetVal)?0:exit(-1);
+
+	/* Tiefengenerator einstellen */
+	XnMapOutputMode outputModeDepth;
+	outputModeDepth.nXRes = 640;
+	outputModeDepth.nYRes = 480;
+	outputModeDepth.nFPS = 30;
+	nRetVal = depth.SetMapOutputMode(outputModeDepth);
+	checkError("Fehler beim Konfigurieren des Tiefengenerators", nRetVal)?0:exit(-1);
+
+
+	/* Imagegenerator erstellen */
+	nRetVal = image.Create(context);
+	checkError("Fehler beim Erstellen des Bildgenerators", nRetVal)?0:exit(-1);
+
+	/* Imagegenerator einstellen */
+	XnMapOutputMode outputModeImage;
+	outputModeImage.nXRes = 640;
+	outputModeImage.nYRes = 480;
+	outputModeImage.nFPS = 30;
+	nRetVal = image.SetMapOutputMode(outputModeImage);
+	checkError("Fehler beim Konfigurieren des Bildgenerators", nRetVal)?0:exit(-1);	
+
+	/* SceneAnalzer einstellen */
+	nRetVal = user.Create(context);
+	checkError("Fehler beim Konfigurieren des Usergenerators", nRetVal)?0:exit(-1);
+
+
+	/* Starten der Generatoren - volle Kraft vorraus! */
+	nRetVal = context.StartGeneratingAll();
+	checkError("Fehler beim Starten der Generatoren", nRetVal)?0:exit(-1);
+
+
 	/* Glut initialisieren */
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
@@ -388,23 +503,18 @@ int main(int argc, char **argv) {
 	glClearColor(0, 0, 0, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
 	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
 	glDepthFunc(GL_LEQUAL);
-
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_NORMALIZE);
+	//glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
 
 	float light_position[4] = {0.0,0.0,0.0,1.0};
 	glLightfv(GL_LIGHT0,GL_POSITION,light_position);
 	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.003);
 	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0002);
 
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_NORMALIZE);
-
 	init_wpos();
-
-
-	//glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
 
 	glutDisplayFunc(glut_display);
 	glutIdleFunc(glut_idle);
