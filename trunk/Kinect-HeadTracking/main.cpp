@@ -16,7 +16,7 @@ using namespace std;
 #define WINDOW_SIZE_X 800
 #define WINDOW_SIZE_Y 600
 
-//#define DEBUGOUT
+#define DEBUGOUT
 
 
 /* Globals */
@@ -24,6 +24,7 @@ static int win;
 xn::Context context;
 xn::DepthGenerator depth;
 xn::ImageGenerator image;
+xn::SceneAnalyzer scene;
 XnStatus nRetVal;
 GLuint texture_rgb, texture_depth;
 GLubyte aDepthMap[640*480];
@@ -35,6 +36,7 @@ int cy = 0;
 int ox = 0;
 int oy = 0;
 bool lp = false;
+bool printFile = false;
 int maxdepth=-1;
 
 struct WorldPos {
@@ -86,9 +88,13 @@ void glut_keyboard(unsigned char key, int x, int y) {
 	case 'f':
 		transy--;
 		break;
+	case 'p':
+		printFile = true;
+		break;
 	}
 
-	cout << "Scale X: " << scalex << "\tScale Y: " << scaley << "\tTrans X: " << transx << "\tTrans Y: " << transy << endl;
+	cout << "Scale X: " << scalex << "\tScale Y: " << scaley << "\tTrans X: " << transx << "\tTrans Y: " << 
+transy << endl;
 }
 
 void glut_mouse(int button, int state, int x, int y) {
@@ -124,6 +130,7 @@ float rot_angle=0;
 void glut_display() {
 	xn::DepthMetaData pDepthMapMD;
 	xn::ImageMetaData pImageMapMD;
+	xn::SceneMetaData pSceneMapMD;
 #ifdef DEBUGOUT
 	ofstream datei;
 #endif
@@ -152,6 +159,9 @@ void glut_display() {
 	nRetVal = context.WaitAndUpdateAll();
 	checkError("Fehler beim Aktualisieren der Daten", nRetVal);
 
+	scene.GetMetaData(pSceneMapMD);
+	const XnLabel* pSceneMap =  scene.GetLabelMap();
+
 	// Aktuelle Depth Metadaten auslesen
 	depth.GetMetaData(pDepthMapMD);
 	// Aktuelle Depthmap auslesen
@@ -171,14 +181,29 @@ void glut_display() {
 	const unsigned int yres = pDepthMapMD.YRes();
 
 #ifdef DEBUGOUT
-	datei.open("daniel.txt", ios::out);
+	if(printFile)
+		datei.open("daniel.txt", ios::out);
 #endif
+
+
+	for(unsigned int y=0; y<pSceneMapMD.YRes()-1; y++) {
+		for(unsigned int x=0; x<pSceneMapMD.XRes(); x++) {
+			if(printFile)
+				datei << pSceneMap[x+y*pSceneMapMD.XRes()]; 
+/*			if(pSceneMap[x+y*pSceneMapMD.XRes()]!=0) 
+				cout << pSceneMap[x+y*pSceneMapMD.XRes()] << endl;*/
+		}
+		if(printFile)
+			datei << endl;
+	}
 
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<xres; x++) {
-			aDepthMap[x+y*xres] = static_cast<GLubyte>(static_cast<float>(pDepthMap[x+y*xres])/static_cast<float>(maxdepth)*255);
+			aDepthMap[x+y*xres] = static_cast<GLubyte>(static_cast<float>(pDepthMap[x
++y*xres])/static_cast<float>(maxdepth)*255);
 		}
 	}
+	
 
 	/*
 	glEnable(GL_TEXTURE_2D);
@@ -221,11 +246,9 @@ void glut_display() {
 	for(unsigned int y=0; y<yres-1; y++) {
 		for(unsigned int x=0; x<630; x++) {
 			if(pDepthMap[x+y*xres]!=0) {
-				glTexCoord2f(static_cast<float>(x)/static_cast<float>(630), static_cast<float>(y)/static_cast<float>(480)); 
+				glTexCoord2f(static_cast<float>(x)/static_cast<float>(630), static_cast<float>
+(y)/static_cast<float>(480)); 
 				glVertex3f(x, (yres-y), -pDepthMap[x+y*xres]/2.00);
-#ifdef DEBUGOUT
-				datei << t_gamma[pDepthMap[x+y*xres]] << endl;
-#endif
 			}
 		}
 	}
@@ -234,8 +257,10 @@ void glut_display() {
 	glDisable(GL_TEXTURE_2D);
 	glutSwapBuffers();
 #ifdef DEBUGOUT
-	datei.close();
-	exit(-1);
+	if(printFile) {
+		printFile=false;
+		datei.close();
+	}
 #endif
 }
 
@@ -272,6 +297,11 @@ int main(int argc, char **argv) {
 	outputModeImage.nFPS = 30;
 	nRetVal = image.SetMapOutputMode(outputModeImage);
 	checkError("Fehler beim Konfigurieren des Bildgenerators", nRetVal)?0:exit(-1);	
+
+	/* SceneAnalzer einstellen */
+	nRetVal = scene.Create(context);
+	checkError("Fehler beim Konfigurieren des Szenenanalisierers", nRetVal)?0:exit(-1);
+
 
 	/* Starten der Generatoren - volle Kraft vorraus! */
 	nRetVal = context.StartGeneratingAll();
