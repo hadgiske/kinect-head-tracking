@@ -17,9 +17,10 @@ using namespace std;
 #define WINDOW_SIZE_X 800
 #define WINDOW_SIZE_Y 600
 //#define DEBUGOUT
-#define ROOM_X 50
-#define ROOM_Y 50
-#define ROOM_Z 100
+//#define CONSOLEOUT
+#define ROOM_X 800
+#define ROOM_Y 600
+#define ROOM_Z 1000
 
 /* Structs */
 struct HeadTransformation {
@@ -74,16 +75,6 @@ public:
 		return retval;
 	}
 
-	void SetOffset(float cx, float cy, float cz) {
-		x = x + (cx - offset_x);
-		offset_x=cx;
-
-		y = y + (cy - offset_y);
-		offset_y=cy;
-
-		z = z + (cz - offset_z);
-		offset_z=cz;
-	}
 private: 
 	float offset_x, offset_y, offset_z;
 
@@ -108,13 +99,6 @@ void init_wpos(){
 	wpos[3].y = +ROOM_Y/2;
 	wpos[3].z = -ROOM_Z/2;
 
-}
-
-void refresh_wpos(float cx, float cy, float cz){
-	wpos[0].SetOffset(cx,cy,0);	
-	wpos[1].SetOffset(cx,cy,0);	
-	wpos[2].SetOffset(cx,cy,0);
-	wpos[3].SetOffset(cx,cy,0);
 }
 
 WorldPos getNormal(WorldPos first, WorldPos second){
@@ -295,7 +279,7 @@ void draw_room() {
 	glVertex3f(wpos[0].x,wpos[0].y,wpos[0].z);
 	glEnd();
 	glBegin(GL_QUADS);
-	
+
 	glColor3f(1,1,1);
 	//Rechte Wand zeichnen	
 	normal = getNormal(WorldPos(ROOM_X/2, -ROOM_Y/2, ROOM_Z/2)-wpos[1], wpos[2]-wpos[1]);
@@ -328,6 +312,17 @@ void draw_room() {
 	glVertex3f( wpos[2].x,wpos[2].y,wpos[2].z);
 	glVertex3f( ROOM_X/2,ROOM_Y/2,ROOM_Z/2);
 	glEnd();
+
+
+	//glRotatef(mouse.cx,0,1,0);
+	//glRotatef(-mouse.cy,1,0,0);
+	glTranslatef(0,0,300);
+	glPushMatrix();
+	glTranslatef(30,0,-130);
+	glutWireCube(80);
+	glPopMatrix();
+
+	glutWireCube(80);
 }
 
 float rot_angle=0;
@@ -347,9 +342,8 @@ void glut_display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
 	glLoadIdentity();
-	gluPerspective(45, WINDOW_SIZE_X/WINDOW_SIZE_Y, 1, 5000);
+	glFrustum(-ROOM_X/2+static_cast<int>(headtrans.x),ROOM_X/2+static_cast<int>(headtrans.x),-ROOM_Y/2-static_cast<int>(headtrans.y),ROOM_Y/2-static_cast<int>(headtrans.y),1525,2525);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -381,7 +375,7 @@ void glut_display() {
 		pSkeleton.GetSkeletonJoint(pUser[0], XN_SKEL_HEAD, head);
 
 		if(head.position.fConfidence && head.orientation.fConfidence) {
-			headtrans.rotmat[0] = head.orientation.orientation.elements[0];
+/*			headtrans.rotmat[0] = head.orientation.orientation.elements[0];
 			headtrans.rotmat[1] = head.orientation.orientation.elements[1];
 			headtrans.rotmat[2] = head.orientation.orientation.elements[2];
 			headtrans.rotmat[3] = 0;
@@ -399,14 +393,14 @@ void glut_display() {
 			headtrans.rotmat[12] = 0;
 			headtrans.rotmat[13] = 0;
 			headtrans.rotmat[14] = 0;
-			headtrans.rotmat[15] = 1;
+			headtrans.rotmat[15] = 1;*/
 
 			headtrans.x = head.position.position.X;
 			headtrans.y = head.position.position.Y;
 			headtrans.z = head.position.position.Z;
 			
 			 
-
+#ifdef CONSOLEOUT
 			clearScreen();
 			cout	<< "Confidence Position: " << head.position.fConfidence
 					<< " X: " << head.position.position.X
@@ -423,15 +417,15 @@ void glut_display() {
 					<< "\t" << headtrans.rotmat[2]
 					<< "\t" << headtrans.rotmat[6]
 					<< "\t" << headtrans.rotmat[10] << endl << endl;
+#endif
 		}
 	}
-	refresh_wpos(-headtrans.x/10, headtrans.y/10, headtrans.z/10);
 
 	//------------------------------------------------------------------------------------------
 	//BEGIN: Kamera-Test
 	//------------------------------------------------------------------------------------------
-	glTranslatef(0,0,-110.4);
-
+	glTranslatef(0,0,-2000);
+	glTranslatef(static_cast<int>(headtrans.x),-static_cast<int>(headtrans.y),0);
 	draw_room();
 
 	//glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -509,10 +503,10 @@ int main(int argc, char **argv) {
 	glEnable(GL_NORMALIZE);
 	//glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
 
-	float light_position[4] = {0.0,0.0,0.0,1.0};
+	float light_position[4] = {0.0,0.0,-1550.0,1.0};
 	glLightfv(GL_LIGHT0,GL_POSITION,light_position);
-	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.003);
-	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.0002);
+	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.006);
+	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.00001);
 
 	init_wpos();
 
