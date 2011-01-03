@@ -27,4 +27,9 @@
       <Filter>Libs</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="textures.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
