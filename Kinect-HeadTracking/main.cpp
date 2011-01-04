@@ -356,7 +356,7 @@ void glut_display() {
 				1525,
 				2525);*/
 
-	float nearplane = 0.05;
+	float nearplane = 1525;
 	float screenaspect = ROOM_X/ROOM_Y;
 	glFrustum(	nearplane*(-0.5 * screenaspect + headtrans.x)/headtrans.z,
 				nearplane*( 0.5 * screenaspect + headtrans.x)/headtrans.z,
