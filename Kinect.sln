@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3D_DepthImage", "3D_DepthIm
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Head_Tracking", "Head_Tracking\Head_Tracking.vcxproj", "{D48435A9-C2BC-41BF-9882-DD7581F1DB73}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kinect_headtracking", "kinect_headtracking\kinect_headtracking.vcxproj", "{C3F4FD83-C6D1-4260-BFC2-E62604A1AC69}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -23,6 +25,10 @@ Global
 		{D48435A9-C2BC-41BF-9882-DD7581F1DB73}.Debug|Win32.Build.0 = Debug|Win32
 		{D48435A9-C2BC-41BF-9882-DD7581F1DB73}.Release|Win32.ActiveCfg = Release|Win32
 		{D48435A9-C2BC-41BF-9882-DD7581F1DB73}.Release|Win32.Build.0 = Release|Win32
+		{C3F4FD83-C6D1-4260-BFC2-E62604A1AC69}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C3F4FD83-C6D1-4260-BFC2-E62604A1AC69}.Debug|Win32.Build.0 = Debug|Win32
+		{C3F4FD83-C6D1-4260-BFC2-E62604A1AC69}.Release|Win32.ActiveCfg = Release|Win32
+		{C3F4FD83-C6D1-4260-BFC2-E62604A1AC69}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
