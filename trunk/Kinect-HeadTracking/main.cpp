@@ -10,12 +10,14 @@
 #include <fstream>
 #include <cmath>
 
+#include "textures.h"
+
 
 using namespace std;
 
 /* Defines */
-#define WINDOW_SIZE_X 800
-#define WINDOW_SIZE_Y 600
+#define WINDOW_SIZE_X 1024
+#define WINDOW_SIZE_Y 768
 //#define DEBUGOUT
 //#define CONSOLEOUT
 #define ROOM_X 800
@@ -117,7 +119,7 @@ xn::DepthGenerator depth;
 xn::ImageGenerator image;
 xn::UserGenerator user;
 XnStatus nRetVal;
-GLuint texture_rgb, texture_depth;
+GLuint texture_rgb, texture_depth, texture_quads;
 GLubyte aDepthMap[640*480];
 bool printFile = false;
 bool calibration = false;
@@ -258,14 +260,16 @@ void _stdcall skel_cal_end(xn::SkeletonCapability& skeleton, XnUserID user, XnBo
 void draw_room() {
 	glBegin(GL_QUADS);
 	glColor3f(1,1,1);
+
+	glBindTexture(GL_TEXTURE_2D, texture_rgb);
 	//Rückwand zeichen
 	//Normale berechnen
 	WorldPos normal = getNormal(wpos[1]-wpos[0],wpos[3]-wpos[0]);
 	glNormal3f(normal.x,normal.y,normal.z);
-	glVertex3f( wpos[0].x,wpos[0].y,wpos[0].z);
-	glVertex3f( wpos[1].x,wpos[1].y,wpos[1].z);
-	glVertex3f( wpos[2].x,wpos[2].y,wpos[2].z);
-	glVertex3f( wpos[3].x,wpos[3].y,wpos[3].z);
+	glTexCoord2f(0, 0);glVertex3f( wpos[0].x,wpos[0].y,wpos[0].z);
+	glTexCoord2f(6, 0);glVertex3f( wpos[1].x,wpos[1].y,wpos[1].z);
+	glTexCoord2f(6, 6);glVertex3f( wpos[2].x,wpos[2].y,wpos[2].z);
+	glTexCoord2f(0, 6);glVertex3f( wpos[3].x,wpos[3].y,wpos[3].z);
 	glEnd();
 
 	glColor3f(1,1,1);
@@ -273,10 +277,10 @@ void draw_room() {
 	//Boden zeichen	
 	normal = getNormal(wpos[0]-wpos[1],WorldPos(ROOM_X/2,-ROOM_Y/2,ROOM_Z/2)-wpos[1]);
 	glNormal3f(normal.x,normal.y,normal.z);
-	glVertex3f(-ROOM_X/2,-ROOM_Y/2,ROOM_Z/2);
-	glVertex3f( ROOM_X/2,-ROOM_Y/2,ROOM_Z/2);
-	glVertex3f(wpos[1].x,wpos[1].y,wpos[1].z);
-	glVertex3f(wpos[0].x,wpos[0].y,wpos[0].z);
+	glTexCoord2f(0, 0);glVertex3f(-ROOM_X/2,-ROOM_Y/2,ROOM_Z/2);
+	glTexCoord2f(6, 0);glVertex3f( ROOM_X/2,-ROOM_Y/2,ROOM_Z/2);
+	glTexCoord2f(6, 6);glVertex3f(wpos[1].x,wpos[1].y,wpos[1].z);
+	glTexCoord2f(0, 6);glVertex3f(wpos[0].x,wpos[0].y,wpos[0].z);
 	glEnd();
 	glBegin(GL_QUADS);
 
@@ -284,10 +288,10 @@ void draw_room() {
 	//Rechte Wand zeichnen	
 	normal = getNormal(WorldPos(ROOM_X/2, -ROOM_Y/2, ROOM_Z/2)-wpos[1], wpos[2]-wpos[1]);
 	glNormal3f(normal.x,normal.y,normal.z);
-	glVertex3f(ROOM_X/2,-ROOM_Y/2,ROOM_Z/2);
-	glVertex3f(ROOM_X/2, ROOM_Y/2,ROOM_Z/2);
-	glVertex3f(wpos[2].x, wpos[2].y,wpos[2].z);
-	glVertex3f(wpos[1].x,wpos[1].y,wpos[1].z);
+	glTexCoord2f(0, 0);glVertex3f(ROOM_X/2,-ROOM_Y/2,ROOM_Z/2);
+	glTexCoord2f(6, 0);glVertex3f(ROOM_X/2, ROOM_Y/2,ROOM_Z/2);
+	glTexCoord2f(6, 6);glVertex3f(wpos[2].x, wpos[2].y,wpos[2].z);
+	glTexCoord2f(0, 6);glVertex3f(wpos[1].x,wpos[1].y,wpos[1].z);
 	glEnd();
 
 	glBegin(GL_QUADS);
@@ -295,10 +299,10 @@ void draw_room() {
 	//Linke Wand
 	normal = getNormal(wpos[3]-wpos[0], WorldPos(-ROOM_X/2,-ROOM_Y/2,ROOM_Z/2)-wpos[0]);
 	glNormal3f(normal.x,normal.y,normal.z);
-	glVertex3f(-ROOM_X/2,-ROOM_Y/2,ROOM_Z/2);
-	glVertex3f( wpos[0].x,wpos[0].y,wpos[0].z);
-	glVertex3f( wpos[3].x,wpos[3].y,wpos[3].z);
-	glVertex3f(-ROOM_X/2, ROOM_Y/2,ROOM_Z/2);
+	glTexCoord2f(0, 0);glVertex3f(-ROOM_X/2,-ROOM_Y/2,ROOM_Z/2);
+	glTexCoord2f(6, 0);glVertex3f( wpos[0].x,wpos[0].y,wpos[0].z);
+	glTexCoord2f(6, 6);glVertex3f( wpos[3].x,wpos[3].y,wpos[3].z);
+	glTexCoord2f(0, 6);glVertex3f(-ROOM_X/2, ROOM_Y/2,ROOM_Z/2);
 
 	glEnd();
 	glBegin(GL_QUADS);
@@ -307,10 +311,10 @@ void draw_room() {
 	//Decke	
 	normal = getNormal(WorldPos(ROOM_X/2, ROOM_Y/2, ROOM_Z/2)-wpos[2], wpos[3]-wpos[2]);
 	glNormal3f(normal.x,normal.y,normal.z);
-	glVertex3f(-ROOM_X/2,ROOM_Y/2,ROOM_Z/2);
-	glVertex3f(wpos[3].x,wpos[3].y,wpos[3].z);
-	glVertex3f( wpos[2].x,wpos[2].y,wpos[2].z);
-	glVertex3f( ROOM_X/2,ROOM_Y/2,ROOM_Z/2);
+	glTexCoord2f(0, 0);glVertex3f(-ROOM_X/2,ROOM_Y/2,ROOM_Z/2);
+	glTexCoord2f(6, 0);glVertex3f(wpos[3].x,wpos[3].y,wpos[3].z);
+	glTexCoord2f(6, 6);glVertex3f( wpos[2].x,wpos[2].y,wpos[2].z);
+	glTexCoord2f(0, 6);glVertex3f( ROOM_X/2,ROOM_Y/2,ROOM_Z/2);
 	glEnd();
 
 
@@ -319,10 +323,10 @@ void draw_room() {
 	glTranslatef(0,0,300);
 	glPushMatrix();
 	glTranslatef(30,0,-130);
-	glutWireCube(80);
+	glutSolidCube(80);
 	glPopMatrix();
 
-	glutWireCube(80);
+	glutSolidCube(80);
 }
 
 float rot_angle=0;
@@ -336,6 +340,8 @@ void glut_display() {
 	ofstream datei;
 #endif
 
+	glEnable(GL_TEXTURE_2D);
+
 	pUser[0] = 0;
 	pUser[1] = 0;
 
@@ -343,7 +349,22 @@ void glut_display() {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-ROOM_X/2+static_cast<int>(headtrans.x),ROOM_X/2+static_cast<int>(headtrans.x),-ROOM_Y/2-static_cast<int>(headtrans.y),ROOM_Y/2-static_cast<int>(headtrans.y),1525,2525);
+	/*glFrustum(	-ROOM_X/2+(1500.0/1750.0)*static_cast<int>(headtrans.x),
+				ROOM_X/2+(1500.0/1750.0)*static_cast<int>(headtrans.x),
+				-ROOM_Y/2-(1500.0/1750.0)*static_cast<int>(headtrans.y),
+				ROOM_Y/2-(1500.0/1750.0)*static_cast<int>(headtrans.y),
+				1525,
+				2525);*/
+
+	float nearplane = 0.05;
+	float screenaspect = ROOM_X/ROOM_Y;
+	glFrustum(	nearplane*(-0.5 * screenaspect + headtrans.x)/headtrans.z,
+				nearplane*( 0.5 * screenaspect + headtrans.x)/headtrans.z,
+				nearplane*(-0.5 + headtrans.y)/headtrans.z,
+				nearplane*( 0.5 + headtrans.y)/headtrans.z,
+				nearplane,
+				2525);
+
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -424,8 +445,17 @@ void glut_display() {
 	//------------------------------------------------------------------------------------------
 	//BEGIN: Kamera-Test
 	//------------------------------------------------------------------------------------------
-	glTranslatef(0,0,-2000);
-	glTranslatef(static_cast<int>(headtrans.x),-static_cast<int>(headtrans.y),0);
+	//glTranslatef(0,0,-2000);
+	glTranslatef(headtrans.x,headtrans.y,1-headtrans.z);
+	cout << headtrans.x << " " << headtrans.y << " " << headtrans.z << endl;
+	cout	<< nearplane*(-0.5 * screenaspect + headtrans.x)/headtrans.z	<< " "	
+			<< nearplane*( 0.5 * screenaspect + headtrans.x)/headtrans.z	<< " "	
+			<< nearplane*(-0.5 + headtrans.y)/headtrans.z					<< " "	
+			<< nearplane*( 0.5 + headtrans.y)/headtrans.z					<< " "	<< endl;
+
+	
+		
+		
 	draw_room();
 
 	//glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -492,14 +522,14 @@ int main(int argc, char **argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
 	glutInitWindowSize(WINDOW_SIZE_X, WINDOW_SIZE_Y);
-	glutInitWindowPosition(300,150);
+	glutInitWindowPosition(300,0);
 	win = glutCreateWindow("kinect-head-tracking");
 	glClearColor(0, 0, 0, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
 	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	glEnable(GL_COLOR_MATERIAL);
+//	glEnable(GL_COLOR_MATERIAL);
 	glEnable(GL_NORMALIZE);
 	//glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
 
@@ -509,6 +539,14 @@ int main(int argc, char **argv) {
 	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.00001);
 
 	init_wpos();
+
+	/* Texturen */
+	glGenTextures(1, &texture_quads);
+	glBindTexture(GL_TEXTURE_2D, texture_quads);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 200, 200, 0, GL_RGB, GL_UNSIGNED_BYTE, quads_texture_array);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
 
 	glutDisplayFunc(glut_display);
 	glutIdleFunc(glut_idle);
