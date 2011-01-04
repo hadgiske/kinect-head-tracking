@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3D_DepthImage", "3D_DepthImage\3D_DepthImage.vcxproj", "{F39767D2-196C-4026-ADA7-A955DD6EF307}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Head_Tracking", "Head_Tracking\Head_Tracking.vcxproj", "{D48435A9-C2BC-41BF-9882-DD7581F1DB73}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F39767D2-196C-4026-ADA7-A955DD6EF307}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F39767D2-196C-4026-ADA7-A955DD6EF307}.Debug|Win32.Build.0 = Debug|Win32
+		{F39767D2-196C-4026-ADA7-A955DD6EF307}.Release|Win32.ActiveCfg = Release|Win32
+		{F39767D2-196C-4026-ADA7-A955DD6EF307}.Release|Win32.Build.0 = Release|Win32
+		{D48435A9-C2BC-41BF-9882-DD7581F1DB73}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D48435A9-C2BC-41BF-9882-DD7581F1DB73}.Debug|Win32.Build.0 = Debug|Win32
+		{D48435A9-C2BC-41BF-9882-DD7581F1DB73}.Release|Win32.ActiveCfg = Release|Win32
+		{D48435A9-C2BC-41BF-9882-DD7581F1DB73}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		VisualSVNWorkingCopyRoot = .
+	EndGlobalSection
+EndGlobal
