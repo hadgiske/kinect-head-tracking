@@ -1,7 +1,8 @@
 #pragma once
 #include <gl/glut.h>
 #include "defines.h"
-#include "KGrid.h"
+#include "KHeadTrack.h"
+#include "KGlutInput.h"
 
 
 class KProgram
@@ -20,5 +21,6 @@ public:
 	static void glutDisplay(void);
 	static void glutIdle(void);
 	static void showWindow(void);
+	static KHeadTrack headtrack;
 };
 

@@ -33,16 +33,20 @@ void KProgram::initGlut(int argc, char* argv[]){
 	// Setting the glut-funcs
 	glutDisplayFunc(glutDisplay);
 	glutIdleFunc(glutIdle);	
+	glutMouseFunc(KGlutInput::glutMouse);
+	glutKeyboardFunc(KGlutInput::glutKeyboard);
+	glutMotionFunc(KGlutInput::glutMouseMotion);
 }
 
+KHeadTrack KProgram::headtrack(SCREEN_HEIGTH_MM);
 
 void KProgram::glutDisplay(void)
 {
 	// First delete the old scene
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	// Then paint the new scene
-	// ...
+	headtrack.renderScene();
 
 	// Done painting --> now show result
 	glutSwapBuffers();
@@ -52,7 +56,7 @@ void KProgram::glutDisplay(void)
 void KProgram::glutIdle(void)
 {
 	// First do idle-stuff:
-	// ...
+	headtrack.refreshData(KGlutInput::getMouseDeltaX(),KGlutInput::getMouseDeltaY(),1000);
 
 	// Done idle --> now repaint the window
 	glutPostRedisplay();

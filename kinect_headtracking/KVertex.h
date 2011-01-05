@@ -4,6 +4,18 @@
 // Helper-struct
 struct KRGBColor 
 {
+	KRGBColor(float _r, float _g, float _b){
+		r = _r;
+		g = _g;
+		b = _b;
+	}
+
+	KRGBColor(){
+		r = 0;
+		g = 0;
+		b = 0;
+	}
+
 	float r;
 	float g;
 	float b;
