@@ -5,6 +5,7 @@ using namespace std;
 // Internal includes of this program
 #include "KProgram.h"
 
+
 int main(int argc, char* argv[]){
 
 	// Setup glut
@@ -12,6 +13,7 @@ int main(int argc, char* argv[]){
 
 	// Show window
 	KProgram::showWindow();
+
 
 	return 0;
 }

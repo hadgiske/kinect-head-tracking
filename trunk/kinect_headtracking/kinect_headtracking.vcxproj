@@ -74,14 +74,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="KCircle.cpp" />
     <ClCompile Include="KGrid.cpp" />
+    <ClCompile Include="KHeadTrack.cpp" />
+    <ClCompile Include="KItems.cpp" />
+    <ClCompile Include="KGlutInput.cpp" />
     <ClCompile Include="KProgram.cpp" />
     <ClCompile Include="KVertex.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="defines.h" />
+    <ClInclude Include="KCircle.h" />
     <ClInclude Include="KGrid.h" />
+    <ClInclude Include="KHeadTrack.h" />
+    <ClInclude Include="KItems.h" />
+    <ClInclude Include="KGlutInput.h" />
     <ClInclude Include="KProgram.h" />
     <ClInclude Include="KVertex.h" />
   </ItemGroup>

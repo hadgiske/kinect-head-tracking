@@ -2,6 +2,10 @@
 
 KGrid::KGrid(int gridlines)
 {
+	// Control the gridlines
+	if(gridlines < 0 )
+		gridlines = -gridlines;
+
 	// Save the gridline-number
 	mGridlines = gridlines;
 
@@ -32,6 +36,10 @@ void KGrid::renderGrid(float x, float y, float z)
 
 	// First get the modelview-matrix
 	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+
+	// Transfer the whole scene backwards
+	glTranslatef(0,0,-z/2);
 	
 
 	// Paint the back
@@ -68,6 +76,9 @@ void KGrid::renderGrid(float x, float y, float z)
 	paintGrid();
 	glTranslatef(0,0,y);		
 	paintGrid();
+	glPopMatrix();
+
+	// Get back the first matrix
 	glPopMatrix();
 
 }
