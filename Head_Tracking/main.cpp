@@ -384,9 +384,7 @@ void glut_display() {
 	pSkeleton.RegisterCalibrationCallbacks(skel_cal_start, skel_cal_end, 0,hnd);
 	
 	if(calibration){
-		pSkeleton.RequestCalibration(pUser[0],true);
-		calibration = false;
-		cout << "Kalibration wird gestartet, bitte Arme im 90 Grad Winkel nach oben halten." << endl;
+
 	}
 
 	pSkeleton.SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
@@ -475,84 +473,6 @@ void glut_display() {
 
 int main(int argc, char **argv) {
 
-	nRetVal = XN_STATUS_OK;
 
-	/* Context initialisieren (Kameradaten) */
-	nRetVal = context.Init();
-	checkError("Fehler beim Initialisieren des Context", nRetVal)?0:exit(-1);
-
-
-
-	/* Tiefengenerator erstellen */
-	nRetVal = depth.Create(context);
-	checkError("Fehler beim Erstellen des Tiefengenerators", nRetVal)?0:exit(-1);
-
-	/* Tiefengenerator einstellen */
-	XnMapOutputMode outputModeDepth;
-	outputModeDepth.nXRes = 640;
-	outputModeDepth.nYRes = 480;
-	outputModeDepth.nFPS = 30;
-	nRetVal = depth.SetMapOutputMode(outputModeDepth);
-	checkError("Fehler beim Konfigurieren des Tiefengenerators", nRetVal)?0:exit(-1);
-
-
-	/* Imagegenerator erstellen */
-	nRetVal = image.Create(context);
-	checkError("Fehler beim Erstellen des Bildgenerators", nRetVal)?0:exit(-1);
-
-	/* Imagegenerator einstellen */
-	XnMapOutputMode outputModeImage;
-	outputModeImage.nXRes = 640;
-	outputModeImage.nYRes = 480;
-	outputModeImage.nFPS = 30;
-	nRetVal = image.SetMapOutputMode(outputModeImage);
-	checkError("Fehler beim Konfigurieren des Bildgenerators", nRetVal)?0:exit(-1);	
-
-	/* SceneAnalzer einstellen */
-	nRetVal = user.Create(context);
-	checkError("Fehler beim Konfigurieren des Usergenerators", nRetVal)?0:exit(-1);
-
-
-	/* Starten der Generatoren - volle Kraft vorraus! */
-	nRetVal = context.StartGeneratingAll();
-	checkError("Fehler beim Starten der Generatoren", nRetVal)?0:exit(-1);
-
-
-	/* Glut initialisieren */
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutInitWindowSize(WINDOW_SIZE_X, WINDOW_SIZE_Y);
-	glutInitWindowPosition(300,0);
-	win = glutCreateWindow("kinect-head-tracking");
-	glClearColor(0, 0, 0, 0.0); //Hintergrundfarbe: Hier ein leichtes Blau
-	glEnable(GL_DEPTH_TEST);          //Tiefentest aktivieren
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-//	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_NORMALIZE);
-	//glEnable(GL_CULL_FACE);           //Backface Culling aktivieren
-
-	float light_position[4] = {0.0,0.0,-1550.0,1.0};
-	glLightfv(GL_LIGHT0,GL_POSITION,light_position);
-	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.006);
-	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.00001);
-
-	init_wpos();
-
-	/* Texturen */
-	glGenTextures(1, &texture_quads);
-	glBindTexture(GL_TEXTURE_2D, texture_quads);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 200, 200, 0, GL_RGB, GL_UNSIGNED_BYTE, quads_texture_array);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-
-	glutDisplayFunc(glut_display);
-	glutIdleFunc(glut_idle);
-	glutMouseFunc(glut_mouse);
-	glutMotionFunc(glut_mouse_motion);
-	glutKeyboardFunc(glut_keyboard);
-	glutMainLoop();
 	return 0;
 }

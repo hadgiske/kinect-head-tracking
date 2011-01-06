@@ -1,6 +1,7 @@
 #include "KProgram.h"
 
 int KProgram::mWindowHandle = 0;
+kKinect KProgram::kinect = kKinect();
 
 KProgram::KProgram(void)
 {
@@ -56,7 +57,8 @@ void KProgram::glutDisplay(void)
 void KProgram::glutIdle(void)
 {
 	// First do idle-stuff:
-	headtrack.refreshData(KGlutInput::getMouseDeltaX(),KGlutInput::getMouseDeltaY(),1000);
+	KVertex position = kinect.getPosition();
+	headtrack.refreshData(position.mX,position.mY,position.mZ);
 
 	// Done idle --> now repaint the window
 	glutPostRedisplay();

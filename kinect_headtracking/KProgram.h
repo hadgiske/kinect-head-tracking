@@ -1,8 +1,10 @@
 #pragma once
+#include <cstdlib>
 #include <gl/glut.h>
 #include "defines.h"
 #include "KHeadTrack.h"
 #include "KGlutInput.h"
+#include "kKinect.h"
 
 
 class KProgram
@@ -21,6 +23,7 @@ public:
 	static void glutDisplay(void);
 	static void glutIdle(void);
 	static void showWindow(void);
+	static kKinect kinect;
 	static KHeadTrack headtrack;
 };
 

@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------------
 // Glut defines
 //-----------------------------------------------------------------------------
-#define WINDOW_SIZE_X				800
-#define WINDOW_SIZE_Y				600
+#define WINDOW_SIZE_X				1280
+#define WINDOW_SIZE_Y				768
 #define WINDOW_SCREEN_ASPECT		(float)WINDOW_SIZE_X/(float)WINDOW_SIZE_Y
 #define WINDOW_POS_X				300
 #define WINDOW_POS_Y				0
@@ -32,7 +32,10 @@
 //-----------------------------------------------------------------------------
 // Headtracking settings
 //-----------------------------------------------------------------------------
-#define SCREEN_HEIGTH_MM			200
+#define SCREEN_HEIGTH_MM			195
+#define SCALING_X					1.0f
+#define SCALING_Y					1.0f
+#define SCALING_Z					1.0f
 //-----------------------------------------------------------------------------
 
 
