@@ -1,5 +1,7 @@
 #pragma once
+#include <cstdlib>
 #include <gl/glut.h>
+#include "KProgram.h"
 
 
 

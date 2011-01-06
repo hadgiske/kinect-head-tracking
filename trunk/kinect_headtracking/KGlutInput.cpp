@@ -35,7 +35,16 @@ void KGlutInput::glutMouse(int button, int state, int x , int y){
 
 
 void KGlutInput::glutKeyboard(unsigned char key, int x, int y){
-
+	switch(key) {
+	case 'r':
+	case 'R':
+		KProgram::kinect.reset();
+		break;
+	case 'c':
+	case 'C':
+		KProgram::kinect.calibrateUser();
+		break;
+	}
 }
 
 
