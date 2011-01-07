@@ -3,8 +3,14 @@
 int KProgram::mWindowHandle = 0;
 kKinect KProgram::kinect = kKinect();
 
+
+float KProgram::x2=0.9f;
+float KProgram::y2=0.57f;
+float KProgram::z2=2.55f;
+
 KProgram::KProgram(void)
 {
+
 }
 
 KProgram::~KProgram(void)
@@ -30,6 +36,10 @@ void KProgram::initGlut(int argc, char* argv[]){
 	// GL-ENABLES:
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_NORMALIZE);
+	glEnable(GL_FOG);
+
+	// Fog Configuration
+	glFogi(GL_FOG_MODE, GL_LINEAR);
 
 	// Setting the glut-funcs
 	glutDisplayFunc(glutDisplay);
@@ -59,6 +69,7 @@ void KProgram::glutIdle(void)
 	// First do idle-stuff:
 	KVertex position = kinect.getPosition();
 	headtrack.refreshData(position.mX,position.mY,position.mZ);
+//	headtrack.refreshData(x2,y2,z2);
 
 	// Done idle --> now repaint the window
 	glutPostRedisplay();

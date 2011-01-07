@@ -1,4 +1,5 @@
 #include "kKinect.h"
+#include "KProgram.h"
 
 
 kKinect::kKinect(void)
@@ -99,8 +100,12 @@ KVertex kKinect::getPosition(void)
 			skeleton->GetSkeletonJoint(pUser[0], XN_SKEL_HEAD, head);
 
 			if(head.position.fConfidence && head.orientation.fConfidence) {
-				std::cout << "x: " << head.position.position.X << "\t y: " << head.position.position.Y << std::endl;
-				return KVertex(head.position.position.X*SCALING_X, -head.position.position.Y*SCALING_Y, head.position.position.Z*SCALING_Z, KRGBColor());
+				/*std::cout <<	"x: " << head.position.position.X << 
+								"\t y: " << head.position.position.Y << 
+								"x2: " << head.position.position.X/SCREEN_HEIGTH_MM <<
+								"y2: " << (head.position.position.Y+200.0)/SCREEN_HEIGTH_MM <<
+								std::endl;*/
+				return KVertex(head.position.position.X*KProgram::x2, -(head.position.position.Y+200.0)*KProgram::y2, head.position.position.Z*KProgram::z2, KRGBColor());
 			}
 		}
 	}

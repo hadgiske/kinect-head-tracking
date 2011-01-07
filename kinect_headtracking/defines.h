@@ -22,8 +22,9 @@
 #define GRID_LINE_NUMBER			10
 #define ITEM_NUMBER					8
 #define ITEMS_INFRONT				3
-#define ITEM_SIZE					0.05f
+#define ITEM_SIZE					0.04f
 #define ITEM_COLOR					1.0f,0.0f,0.0f // RGB
+#define ITEM_LINE_COLOR				1.0f,0.0f,0.0f // RGB
 #define PI							3.141
 #define CIRCLE_ACCURACY				360.0f // The bigger the more accurate
 //-----------------------------------------------------------------------------
@@ -32,9 +33,9 @@
 //-----------------------------------------------------------------------------
 // Headtracking settings
 //-----------------------------------------------------------------------------
-#define SCREEN_HEIGTH_MM			195
-#define SCALING_X					1.0f
-#define SCALING_Y					1.0f
+#define SCREEN_HEIGTH_MM			190
+#define SCALING_X					0.1f
+#define SCALING_Y					0.1f
 #define SCALING_Z					1.0f
 //-----------------------------------------------------------------------------
 
