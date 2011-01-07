@@ -34,6 +34,10 @@ void KHeadTrack::renderScene(void){
 		// Delete the old stuff
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		// Fog
+		glFogf(GL_FOG_START, mHeadZ);
+		glFogf(GL_FOG_END, mHeadZ+5);
+
 		// Define a near-plane
 		float nearPlane = 0.05f;
 
@@ -52,7 +56,7 @@ void KHeadTrack::renderScene(void){
 		glTranslatef(mHeadX,mHeadY,1-mHeadZ);
 
 		// Lets look there
-		//gluLookAt(mHeadX,mHeadY,mHeadZ,mHeadX,mHeadY,0,0,1,0);
+//		gluLookAt(mHeadX,-mHeadY,mHeadZ,mHeadX,-mHeadY,0,0,1,0);
 
 		// Finally render
 		mGrid.renderGrid(	CUBE_SIZE_X,

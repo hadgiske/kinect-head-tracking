@@ -32,6 +32,14 @@ void KCircle::renderCircle(void)
 {
 	// Render the circle as a polygon, but only if there is a circle
 	if(mRadius > 0) {
+		glLineWidth(2);
+		glBegin(GL_LINES);
+			glColor3f(ITEM_LINE_COLOR);
+			glVertex3f(mCenter.mX, mCenter.mY, mCenter.mZ);
+			glVertex3f(mCenter.mX, mCenter.mY, -1);
+		glEnd();
+		glLineWidth(1);
+
 		glBegin(GL_POLYGON);
 			// Define the color
 			glColor3f(	mCenter.mColor.r,
@@ -43,13 +51,12 @@ void KCircle::renderCircle(void)
 						mCenter.mY,
 						mCenter.mZ);
 
-			// Paint the circle
-			for( double theta = 0.0; theta < 2*PI ; theta += 2*PI / CIRCLE_ACCURACY ) {
+			// Paint the outer circle
+			for( double theta = 0.0; theta < 2*PI+2*PI/CIRCLE_ACCURACY ; theta += 2*PI / CIRCLE_ACCURACY ) {
 				glVertex3f(	mCenter.mX + cos( theta ) * mRadius, 
-							mCenter.mY + sin( theta ) * mRadius,
-							mCenter.mZ );
+					mCenter.mY + sin( theta ) * mRadius,
+					mCenter.mZ );
 			}
-
 		glEnd();
 	}
 

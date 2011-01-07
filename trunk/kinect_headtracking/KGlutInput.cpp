@@ -44,7 +44,35 @@ void KGlutInput::glutKeyboard(unsigned char key, int x, int y){
 	case 'C':
 		KProgram::kinect.calibrateUser();
 		break;
+	case 'a':
+	case 'A':
+		KProgram::x2-=0.01;
+		break;
+	case 'q':
+	case 'Q':
+		KProgram::x2+=0.01;
+		break;
+	case 's':
+	case 'S':
+		KProgram::y2-=0.01;
+		break;
+	case 'w':
+	case 'W':
+		KProgram::y2+=0.01;
+		break;
+	case 'd':
+	case 'D':
+		KProgram::z2-=0.01;
+		break;
+	case 'e':
+	case 'E':
+		KProgram::z2+=0.01;
+		break;
 	}
+	std::cout	<< "x: " << KProgram::x2
+		<< "\ty: " << KProgram::y2
+		<< "\tz: " << KProgram::z2 << std::endl;
+			
 }
 
 
